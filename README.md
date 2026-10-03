@@ -128,14 +128,61 @@ cpe-practice-arena/
 
 ---
 
-## 💡 CPE 一顆星常考題型覆蓋
+## 💡 CPE 一顆星必考 49 題全收錄
 
-本練習場目前收錄了 CPE 最常考的經典 1 顆星題目：
-- **基礎數論與模擬**：UVa 100 (3n+1)、UVa 10035 (進位)、UVa 10055 (戰士差值)、UVa 10071 (物理位移) 等
-- **排序與中位數**：UVa 10041 (Vito's Family)、UVa 299 (Train Swapping) 等
-- **字串解析與頻率**：UVa 272 (TeX Quotes)、UVa 10222 (Decode the Mad man)、UVa 10008 (What's Cryptanalysis) 等
-- **大數與進制轉換**：UVa 10018 (Reverse and Add)、UVa 10101 (Bangla Numbers) 等
-- **二維陣列與模擬**：UVa 10189 (Minesweeper) 等
+本練習場已收錄官方必考一顆星**完整 49 道題目**，並全部配置 GCC 實測驗證之 3 組測試資料（範例、極端邊界、規模測試）：
+
+| 題號 | UVa 代號 | 題目名稱 | 題型分類 |
+|---|---|---|---|
+| 1 | UVa 00100 | The 3n + 1 problem | 基礎數論與模擬 |
+| 2 | UVa 00118 | Mutant Flatworld Explorers | 二維陣列與模擬 |
+| 3 | UVa 00272 | TeX Quotes | 字串解析與字元頻率 |
+| 4 | UVa 00299 | Train Swapping | 排序與中位數 |
+| 5 | UVa 00490 | Rotating Sentences | 二維陣列與模擬 |
+| 6 | UVa 00948 | Fibonaccimal Base | 大數運算與進制轉換 |
+| 7 | UVa 10008 | What's Cryptanalysis | 字串解析與字元頻率 |
+| 8 | UVa 10019 | Funny Encryption Method | 大數運算與進制轉換 |
+| 9 | UVa 10035 | Primary Arithmetic | 基礎數論與模擬 |
+| 10 | UVa 10038 | Jolly Jumpers | 排序與中位數 |
+| 11 | UVa 10041 | Vito's family | 排序與中位數 |
+| 12 | UVa 10050 | Hartals | 排序與中位數 |
+| 13 | UVa 10055 | Hashmat the Brave Warrior | 基礎數論與模擬 |
+| 14 | UVa 10056 | What is the Probability? | 基礎數論與模擬 |
+| 15 | UVa 10057 | A mid-summer nights dream | 排序與中位數 |
+| 16 | UVa 10062 | Tell me the frequencies! | 字串解析與字元頻率 |
+| 17 | UVa 10071 | Back to High School Physics | 基礎數論與模擬 |
+| 18 | UVa 10093 | An Easy Problem! | 大數運算與進制轉換 |
+| 19 | UVa 10101 | Bangla Numbers | 大數運算與進制轉換 |
+| 20 | UVa 10170 | The Hotel with Infinite Rooms | 基礎數論與模擬 |
+| 21 | UVa 10189 | Minesweeper | 二維陣列與模擬 |
+| 22 | UVa 10190 | Divide, But Not Quite Conquer! | 基礎數論與模擬 |
+| 23 | UVa 10193 | All You Need Is Love | 基礎數論與模擬 |
+| 24 | UVa 10221 | Satellites | 基礎數論與模擬 |
+| 25 | UVa 10222 | Decode the Mad man | 字串解析與字元頻率 |
+| 26 | UVa 10226 | Hardwood species | 排序與中位數 |
+| 27 | UVa 10235 | Simply Emirp | 基礎數論與模擬 |
+| 28 | UVa 10242 | Fourth Point!! | 基礎數論與模擬 |
+| 29 | UVa 10252 | Common Permutation | 字串解析與字元頻率 |
+| 30 | UVa 10268 | 498-bis | 字串解析與字元頻率 |
+| 31 | UVa 10409 | Die Game | 二維陣列與模擬 |
+| 32 | UVa 10415 | Eb Alto Saxophone Player | 字串解析與字元頻率 |
+| 33 | UVa 10420 | List of Conquests | 排序與中位數 |
+| 34 | UVa 10642 | Can You Solve It? | 基礎數論與模擬 |
+| 35 | UVa 10783 | Odd Sum | 基礎數論與模擬 |
+| 36 | UVa 10812 | Beat the Spread! | 基礎數論與模擬 |
+| 37 | UVa 10908 | Largest Squares | 二維陣列與模擬 |
+| 38 | UVa 10922 | 2 the 9s | 大數運算與進制轉換 |
+| 39 | UVa 10929 | You can say 11 | 大數運算與進制轉換 |
+| 40 | UVa 10931 | Parity | 大數運算與進制轉換 |
+| 41 | UVa 11005 | Cheapest Base | 大數運算與進制轉換 |
+| 42 | UVa 11063 | B2-Sequence | 基礎數論與模擬 |
+| 43 | UVa 11150 | Cola | 基礎數論與模擬 |
+| 44 | UVa 11321 | Sort! Sort!! and Sort!!! | 排序與中位數 |
+| 45 | UVa 11332 | Summing Digits | 基礎數論與模擬 |
+| 46 | UVa 11349 | Symmetric Matrix | 二維陣列與模擬 |
+| 47 | UVa 11417 | GCD | 基礎數論與模擬 |
+| 48 | UVa 11461 | Square Numbers | 基礎數論與模擬 |
+| 49 | UVa 12019 | Doom's Day Algorithm | 基礎數論與模擬 |
 
 ---
 

@@ -5,6 +5,10 @@
     "title": "The 3n + 1 problem",
     "category": "基礎數論與模擬",
     "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N · L) 或 O(N) 預處理",
+    "spaceComplexity": "O(1) 或 O(MAX) 記憶化",
     "description": "考慮以下演算法：給定整數 n，若 n 為奇數則 n = 3n + 1，若 n 為偶數則 n = n / 2。重複此過程直到 n = 1。過程中經過的數字個數（包含 1）稱為 n 的 cycle length。\n\n給定任兩個整數 i 與 j，計算介於 i 與 j 之間（包含 i 與 j）的所有整數中，最大的 cycle length 是多少。",
     "inputFormat": "輸入包含多組測資，每行兩個整數 i 和 j (0 < i, j < 10000)。讀取到檔案結尾 (EOF) 為止。",
     "outputFormat": "針對每組測資，輸出原本輸入的 i 與 j，以及在 [i, j] 區間內的最大 cycle length，三者以空格隔開，每組佔一行。",
@@ -13,10 +17,6 @@
     "hint": "【陷阱注意】\n1. 輸入的 i 不一定小於 j！例如輸入可能是 '10 1'。在迴圈計算前必須判斷並交換，確保 start <= end。\n2. 輸出時「必須按照原本輸入的順序」輸出 i 和 j，不能輸出交換後的值！\n3. 3n + 1 運算過程可能會暫時超出 int 上限，建議用 long long 做模擬運算。",
     "template": "#include <stdio.h>\n\n// 計算單一數字 n 的 cycle length\nlong long get_cycle_length(long long n) {\n    long long len = 1;\n    while (n != 1) {\n        if (n % 2 == 1) n = 3 * n + 1;\n        else n = n / 2;\n        len++;\n    }\n    return len;\n}\n\nint main() {\n    long long i, j;\n    while (scanf(\"%lld %lld\", &i, &j) == 2) {\n        // 請在此處撰寫你的解法：\n        // 1. 記錄原本的 i, j\n        // 2. 確定搜尋區間 min 到 max\n        // 3. 找出最大 cycle length 並輸出\n        \n    }\n    return 0;\n}\n",
     "solution": "#include <stdio.h>\n\nlong long get_cycle(long long n) {\n    long long len = 1;\n    while (n != 1) {\n        if (n % 2 != 0) n = 3 * n + 1;\n        else n = n / 2;\n        len++;\n    }\n    return len;\n}\n\nint main() {\n    long long i, j;\n    while (scanf(\"%lld %lld\", &i, &j) == 2) {\n        long long a = i, b = j;\n        if (a > b) {\n            long long tmp = a; a = b; b = tmp;\n        }\n        long long max_len = 0;\n        for (long long k = a; k <= b; k++) {\n            long long cur = get_cycle(k);\n            if (cur > max_len) max_len = cur;\n        }\n        printf(\"%lld %lld %lld\\n\", i, j, max_len);\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(N · L) 或 O(N) 預處理",
-    "spaceComplexity": "O(1) 或 O(MAX) 記憶化",
     "testCases": [
       {
         "id": 1,
@@ -26,171 +26,54 @@
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
+        "name": "極端邊界陷阱 (Corner Cases)",
         "input": "10 1\n1 1\n9999 9999\n200 100\n",
         "expected": "10 1 20\n1 1 1\n9999 9999 92\n200 100 125\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
+        "name": "規模測試 (Scale Cases)",
         "input": "50 150\n800 1200\n5000 6000\n8888 9999\n",
         "expected": "50 150 122\n800 1200 182\n5000 6000 236\n8888 9999 260\n"
       }
     ]
   },
   {
-    "id": "10041",
-    "uvaId": "10041",
-    "title": "Vito's family",
-    "category": "排序與中位數",
-    "difficulty": "★☆☆☆☆",
-    "description": "黑手黨教父 Vito 要搬到紐約生活，他有非常多親戚住在同一條街上。這條街上的房子依門牌號碼排列。Vito 希望選一間房子住，使得他到所有親戚家的總距離最短。\n給定親戚家的門牌號碼，求 Vito 搬到最佳地點後，到所有親戚家的距離總和最小值。",
-    "inputFormat": "第一行有一個整數 T 代表測資筆數。接下來每組測資第一行整數 r (0 < r < 500) 代表親戚人數，接著有 r 個整數表示親戚的門牌號碼 s_i (0 <= s_i < 30000)。",
-    "outputFormat": "對每組測資，輸出最小的距離總和（整數）。",
-    "sampleInput": "2\n2 2 4\n3 2 4 6\n",
-    "sampleOutput": "2\n4\n",
-    "hint": "【思考邏輯與中位數定理】\n在一維軸線上，要讓 sum(|x - s_i|) 最小，最佳的 x 就是這群數字的「中位數 (Median)」。\n1. 將所有門牌號碼存入陣列並由小到大排序 (用 qsort)。\n2. 取中位數 mid = arr[r / 2]。\n3. 走訪每個親戚算 abs(arr[i] - mid) 並累加。",
-    "template": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    return (*(int *)a - *(int *)b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int r;\n        scanf(\"%d\", &r);\n        int street[505];\n        for (int i = 0; i < r; i++) {\n            scanf(\"%d\", &street[i]);\n        }\n        // 請在此處撰寫排序與中位數距離計算\n        \n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    return (*(int *)a - *(int *)b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int r;\n        scanf(\"%d\", &r);\n        int street[505];\n        for (int i = 0; i < r; i++) {\n            scanf(\"%d\", &street[i]);\n        }\n        qsort(street, r, sizeof(int), cmp);\n        int mid = street[r / 2];\n        int total = 0;\n        for (int i = 0; i < r; i++) {\n            int d = street[i] - mid;\n            if (d < 0) d = -d;\n            total += d;\n        }\n        printf(\"%d\\n\", total);\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(R log R) 排序或 O(R) 中位數",
-    "spaceComplexity": "O(R)",
-    "testCases": [
-      {
-        "id": 1,
-        "name": "範例測資 1 (Sample)",
-        "input": "2\n2 2 4\n3 2 4 6\n",
-        "expected": "2\n4\n"
-      },
-      {
-        "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "3\n1 500\n4 10 10 10 10\n5 0 30000 15000 0 30000\n",
-        "expected": "0\n0\n60000\n"
-      },
-      {
-        "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "2\n6 1 3 5 7 9 11\n8 100 200 400 800 1600 3200 6400 12800\n",
-        "expected": "18\n22500\n"
-      }
-    ]
-  },
-  {
-    "id": "10055",
-    "uvaId": "10055",
-    "title": "Hashmat the Brave Warrior",
-    "category": "基礎數論與模擬",
-    "difficulty": "★☆☆☆☆",
-    "description": "勇敢的戰士 Hashmat 每次出征前，都會計算己方軍隊與敵方軍隊的人數差距。請寫一個程式計算兩支軍隊的士兵差額（絕對值）。",
-    "inputFormat": "每行包含兩個整數，代表 Hashmat 的軍隊與敵人的軍隊人數。數字可能高達 2^32。讀到 EOF 結束。",
-    "outputFormat": "對每行輸入，輸出兩數差額的絕對值，每組一行。",
-    "sampleInput": "10 12\n10 14\n100 200\n",
-    "sampleOutput": "2\n4\n100\n",
-    "hint": "【陷阱注意】\n軍隊人數可能達到 2^32，標準 32-bit signed int 上限只有 2*10^9，會發生溢位！\n必須使用 64-bit 整數 `long long`，格式化字串為 `%lld`。\n此外 Hashmat 的軍隊不一定比敵人少，請務必取絕對值或較大者減較小者。",
-    "template": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2) {\n        // 計算差的絕對值並印出\n        \n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2) {\n        long long diff = a - b;\n        if (diff < 0) diff = -diff;\n        printf(\"%lld\\n\", diff);\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(1)",
-    "spaceComplexity": "O(1)",
-    "testCases": [
-      {
-        "id": 1,
-        "name": "範例測資 1 (Sample)",
-        "input": "10 12\n10 14\n100 200\n",
-        "expected": "2\n4\n100\n"
-      },
-      {
-        "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "4294967296 0\n0 4294967296\n4294967296 4294967296\n10000000000 20000000000\n",
-        "expected": "4294967296\n4294967296\n0\n10000000000\n"
-      },
-      {
-        "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "500 200\n999999999 1000000000\n12345678901 9876543210\n",
-        "expected": "300\n1\n2469135691\n"
-      }
-    ]
-  },
-  {
-    "id": "10071",
-    "uvaId": "10071",
-    "title": "Back to High School Physics",
-    "category": "基礎數論與模擬",
-    "difficulty": "★☆☆☆☆",
-    "description": "某物體由靜止開始以等加速度運動。已知在時間 t 時其速度為 v。求在 2t 時間內此物體移動的總位移。",
-    "inputFormat": "每行有兩個整數 v (-100 <= v <= 100) 與 t (0 <= t <= 200)。讀至 EOF 結束。",
-    "outputFormat": "每組輸入輸出一個整數，代表在時間 2t 的位移。",
-    "sampleInput": "0 3\n5 12\n",
-    "sampleOutput": "0\n120\n",
-    "hint": "【物理公式秒殺】\n初速 v0 = 0，a = v / t。\n在時間 2t 時，位移 S = 0.5 * a * (2t)^2 = 0.5 * (v / t) * 4t^2 = 2 * v * t。\n答案直接輸出 2 * v * t 即可！",
-    "template": "#include <stdio.h>\n\nint main() {\n    int v, t;\n    while (scanf(\"%d %d\", &v, &t) == 2) {\n        // 請輸出答案\n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n\nint main() {\n    int v, t;\n    while (scanf(\"%d %d\", &v, &t) == 2) {\n        printf(\"%d\\n\", 2 * v * t);\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(1)",
-    "spaceComplexity": "O(1)",
-    "testCases": [
-      {
-        "id": 1,
-        "name": "範例測資 1 (Sample)",
-        "input": "0 3\n5 12\n",
-        "expected": "0\n120\n"
-      },
-      {
-        "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "-100 200\n100 0\n-50 10\n0 0\n",
-        "expected": "-40000\n0\n-1000\n0\n"
-      },
-      {
-        "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "100 200\n-80 150\n60 70\n",
-        "expected": "40000\n-24000\n8400\n"
-      }
-    ]
-  },
-  {
-    "id": "10929",
-    "uvaId": "10929",
-    "title": "You can say 11",
-    "category": "大數運算與進制",
+    "id": "118",
+    "uvaId": "00118",
+    "title": "Mutant Flatworld Explorers",
+    "category": "二維陣列與模擬",
     "difficulty": "★★☆☆☆",
-    "description": "你的任務是判斷給定的一個正整數是否為 11 的倍數。請注意該整數可能長達 1000 位數！",
-    "inputFormat": "每行包含一個正整數 N (最多 1000 位數)。當 N = 0 時代表輸入結束，該行不需處理。",
-    "outputFormat": "若 N 為 11 的倍數，輸出 'N is a multiple of 11.'，否則輸出 'N is not a multiple of 11.'。",
-    "sampleInput": "112233\n30800\n2937\n323455693\n5038297\n112234\n0\n",
-    "sampleOutput": "112233 is a multiple of 11.\n30800 is a multiple of 11.\n2937 is a multiple of 11.\n323455693 is a multiple of 11.\n5038297 is a not a multiple of 11.\n112234 is not a multiple of 11.\n",
-    "hint": "【大數與同餘定理】\n數字長達 1000 位，不能用 int / long long 存，必須用 char s[1005] 存成字串！\n11 的倍數檢驗法：奇數位數字和與偶數位數字和的差值，若能被 11 整除，則原數能被 11 整除。\n結束條件用 strcmp(s, \"0\") == 0 判定。",
-    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[1005];\n    while (scanf(\"%s\", s) == 1 && strcmp(s, \"0\") != 0) {\n        // 計算奇數索引與偶數索引的數字和\n        \n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[1005];\n    while (scanf(\"%s\", s) == 1 && strcmp(s, \"0\") != 0) {\n        int odd_sum = 0, even_sum = 0;\n        for (int i = 0; s[i] != '\\0'; i++) {\n            if (i % 2 == 0) odd_sum += (s[i] - '0');\n            else            even_sum += (s[i] - '0');\n        }\n        int diff = odd_sum - even_sum;\n        if (diff % 11 == 0)\n            printf(\"%s is a multiple of 11.\\n\", s);\n        else\n            printf(\"%s is not a multiple of 11.\\n\", s);\n    }\n    return 0;\n}\n",
-    "timeLimit": 1.0,
+    "timeLimit": 3.0,
     "memoryLimit": "32 MB",
-    "timeComplexity": "O(|S|) 長度線性掃描",
-    "spaceComplexity": "O(|S|) 字元陣列",
+    "timeComplexity": "O(指令數)",
+    "spaceComplexity": "O(網格大小)",
+    "description": "在一個矩形平面網格世界上模擬探測機器人的移動。機器人有當前座標 (x, y) 和朝向（N, S, E, W）。接受指令 L（左轉）、R（右轉）與 F（前進一步）。若機器人走出邊界則會掉落損毀 (LOST)，並在該掉落點留下警告氣味 (scent)，之後其他機器人若在同一點嘗試走出相同邊界，會忽略該前進指令而免於掉落。",
+    "inputFormat": "第一行為網格右上角座標 (X, Y)。接下來每台機器人有兩行輸入：第一行為起始座標與朝向 (例如 1 1 E)，第二行為指令字串（由 'L', 'R', 'F' 組成，長度小於 100）。輸入至 EOF 為止。",
+    "outputFormat": "對每台機器人，輸出其最終座標與朝向。若掉落則在最後加上 ' LOST'。",
+    "sampleInput": "5 3\n1 1 E\nRFRFRFRF\n3 2 N\nFRRFLLFFRRFLL\n0 3 W\nLLFFFLFLFL\n",
+    "sampleOutput": "1 1 E\n3 3 N LOST\n2 3 S\n",
+    "hint": "【陷阱注意】\n1. Scent 氣味標記：只有當機器人在該格掉出邊界時才會留下氣味。若已有氣味，後續機器人嘗試走向邊界外的 'F' 指令必須忽略，而不是掉落！\n2. 轉向座標變化：N=(0,1), E=(1,0), S=(0,-1), W=(-1,0)。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int maxX, maxY;\n    if (scanf(\"%d %d\", &maxX, &maxY) != 2) return 0;\n    // 請在此處撰寫機器人模擬邏輯\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint scents[105][105];\nint dx[4] = {0, 1, 0, -1}; // N, E, S, W\nint dy[4] = {1, 0, -1, 0};\n\nint get_dir(char c) {\n    if (c == 'N') return 0;\n    if (c == 'E') return 1;\n    if (c == 'S') return 2;\n    return 3;\n}\nchar dir_ch[5] = \"NESW\";\n\nint main() {\n    int maxX, maxY;\n    if (scanf(\"%d %d\", &maxX, &maxY) != 2) return 0;\n    memset(scents, 0, sizeof(scents));\n    int x, y;\n    char dir;\n    char cmd[150];\n    while (scanf(\"%d %d %c\", &x, &y, &dir) == 3) {\n        scanf(\"%s\", cmd);\n        int d = get_dir(dir);\n        int lost = 0;\n        int len = strlen(cmd);\n        for (int i = 0; i < len; i++) {\n            if (cmd[i] == 'L') {\n                d = (d + 3) % 4;\n            } else if (cmd[i] == 'R') {\n                d = (d + 1) % 4;\n            } else if (cmd[i] == 'F') {\n                int nx = x + dx[d];\n                int ny = y + dy[d];\n                if (nx < 0 || nx > maxX || ny < 0 || ny > maxY) {\n                    if (scents[x][y]) {\n                        // ignore move\n                        continue;\n                    } else {\n                        scents[x][y] = 1;\n                        lost = 1;\n                        break;\n                    }\n                } else {\n                    x = nx;\n                    y = ny;\n                }\n            }\n        }\n        if (lost) {\n            printf(\"%d %d %c LOST\\n\", x, y, dir_ch[d]);\n        } else {\n            printf(\"%d %d %c\\n\", x, y, dir_ch[d]);\n        }\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
-        "input": "112233\n30800\n2937\n323455693\n5038297\n112234\n0\n",
-        "expected": "112233 is a multiple of 11.\n30800 is a multiple of 11.\n2937 is a multiple of 11.\n323455693 is a multiple of 11.\n5038297 is a not a multiple of 11.\n112234 is not a multiple of 11.\n"
+        "input": "5 3\n1 1 E\nRFRFRFRF\n3 2 N\nFRRFLLFFRRFLL\n0 3 W\nLLFFFLFLFL\n",
+        "expected": "1 1 E\n3 3 N LOST\n2 3 S\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "11\n22\n121\n1001\n1111\n1234\n0\n",
-        "expected": "11 is a multiple of 11.\n22 is a multiple of 11.\n121 is a multiple of 11.\n1001 is a multiple of 11.\n1111 is a multiple of 11.\n1234 is not a multiple of 11.\n"
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2 2\n0 0 S\nF\n0 0 S\nF\n2 2 E\nF\n",
+        "expected": "0 0 S LOST\n0 0 S\n2 2 E LOST\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "12345678901234567890\n99999999999999999999\n1000000000000000000000000000001\n0\n",
-        "expected": "12345678901234567890 is not a multiple of 11.\n99999999999999999999 is a multiple of 11.\n1000000000000000000000000000001 is not a multiple of 11.\n"
+        "name": "規模測試 (Scale Cases)",
+        "input": "10 10\n5 5 N\nFFFFFRRRR\n5 5 S\nFFFFFL\n0 0 N\nFRFRFRFR\n",
+        "expected": "5 10 N\n5 0 E\n0 0 N\n"
       }
     ]
   },
@@ -200,6 +83,10 @@
     "title": "TeX Quotes",
     "category": "字串處理與字元頻率",
     "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(|S|)",
+    "spaceComplexity": "O(1)",
     "description": "在 TeX 排版系統中，雙引號通常用兩個反引號 `` 開頭，用兩個單引號 '' 結尾。請寫一個程式將文字中的雙引號 \" 交替替換為 `` 與 ''。",
     "inputFormat": "包含多行文章文字，直到 EOF 結束。",
     "outputFormat": "輸出替換後的文章，保持其他所有字元與換行不變。",
@@ -208,10 +95,6 @@
     "hint": "【字元逐一處理】\n不需要一次讀取整行，用 getchar() 一個字元一個字元讀取最簡單直覺！\n維持一個 flag 變數 (0 或 1) 代表當前是開引號還是閉引號：\n遇到 '\"' 時，若 flag == 0 輸出 \"``\" 並將 flag 設為 1；若 flag == 1 輸出 \"''\" 並將 flag 設為 0。\n其餘字元直接 putchar(c)。",
     "template": "#include <stdio.h>\n\nint main() {\n    int c;\n    int open = 1;\n    while ((c = getchar()) != EOF) {\n        // 請在此處處理雙引號替換\n        \n    }\n    return 0;\n}\n",
     "solution": "#include <stdio.h>\n\nint main() {\n    int c;\n    int open = 1;\n    while ((c = getchar()) != EOF) {\n        if (c == '\"') {\n            if (open) {\n                printf(\"``\");\n                open = 0;\n            } else {\n                printf(\"''\");\n                open = 1;\n            }\n        } else {\n            putchar(c);\n        }\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(|S|)",
-    "spaceComplexity": "O(1)",
     "testCases": [
       {
         "id": 1,
@@ -221,54 +104,132 @@
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
+        "name": "極端邊界陷阱 (Corner Cases)",
         "input": "He said, \"Hello!\"\nThen she replied, \"Hi!\"\n\"A\" and \"B\"\n",
         "expected": "He said, ``Hello!''\nThen she replied, ``Hi!''\n``A'' and ``B''\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
+        "name": "規模測試 (Scale Cases)",
         "input": "No quotes here.\n\"\"Empty quote\"\"\n\"Only one sentence.\"\n",
         "expected": "No quotes here.\n``''Empty quote``''\n``Only one sentence.''\n"
       }
     ]
   },
   {
-    "id": "10035",
-    "uvaId": "10035",
-    "title": "Primary Arithmetic",
-    "category": "基礎數論與模擬",
+    "id": "299",
+    "uvaId": "00299",
+    "title": "Train Swapping",
+    "category": "排序與中位數",
     "difficulty": "★☆☆☆☆",
-    "description": "小學生做加法時最常在進位 (carry) 出錯。給定兩個正整數，計算將它們相加時總共發生了幾次進位運算。",
-    "inputFormat": "每行包含兩個不大於 10 位數的無號整數。當兩個數字皆為 0 時代表結束。",
-    "outputFormat": "若沒有進位，輸出 'No carry operation.'。\n若有 1 次進位，輸出 '1 carry operation.'。\n若有超過 1 次進位，輸出 'X carry operations.'（注意 operation 與 operations 的單複數差別！）。",
-    "sampleInput": "123 456\n555 555\n123 594\n0 0\n",
-    "sampleOutput": "No carry operation.\n3 carry operations.\n1 carry operation.\n",
-    "hint": "【模擬逐位相加】\n用 carry 變數記錄當前進位 (0 或 1)。\n每次取出 a % 10 與 b % 10，加上 carry：\n若 (a % 10 + b % 10 + carry) >= 10，則 carry = 1，計數器 count++；否則 carry = 0。\n重複直到 a == 0 且 b == 0。\n【魔鬼細節】：1 次進位時輸出 '1 carry operation.' (沒有 s)！",
-    "template": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        // 逐位相加計算進位\n        \n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        int carries = 0;\n        int carry = 0;\n        while (a > 0 || b > 0) {\n            int sum = (a % 10) + (b % 10) + carry;\n            if (sum >= 10) {\n                carry = 1;\n                carries++;\n            } else {\n                carry = 0;\n            }\n            a /= 10;\n            b /= 10;\n        }\n        if (carries == 0)\n            printf(\"No carry operation.\\n\");\n        else if (carries == 1)\n            printf(\"1 carry operation.\\n\");\n        else\n            printf(\"%d carry operations.\\n\", carries);\n    }\n    return 0;\n}\n",
     "timeLimit": 3.0,
     "memoryLimit": "32 MB",
-    "timeComplexity": "O(log10 N)",
-    "spaceComplexity": "O(1)",
+    "timeComplexity": "O(L^2)",
+    "spaceComplexity": "O(L)",
+    "description": "鐵路調度員需要將一列由 1 到 L 個車廂組成的火車依序排好。調度橋每次只能交換相鄰的兩個車廂。求將火車車廂由小到大排序所需的最少相鄰交換次數（亦即計算逆序數對個數，氣泡排序的交換次數）。",
+    "inputFormat": "第一行包含測資組數 N。每組測資包含兩行：第一行為車廂長度 L (0 <= L <= 50)，第二行為長度為 L 的車廂初始排列。",
+    "outputFormat": "對每組測資輸出一行：'Optimal train swapping takes S swaps.'，其中 S 為最少交換次數。",
+    "sampleInput": "3\n3\n1 3 2\n4\n4 3 2 1\n2\n2 1\n",
+    "sampleOutput": "Optimal train swapping takes 1 swaps.\nOptimal train swapping takes 6 swaps.\nOptimal train swapping takes 1 swaps.\n",
+    "hint": "【氣泡排序原理】\n相鄰兩兩交換次數等於逆序數對（Inversion count），即滿足 i < j 且 a[i] > a[j] 的對數。直接使用兩層迴圈計數或寫標準 Bubble Sort 即可。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int L;\n        scanf(\"%d\", &L);\n        int a[60];\n        for (int i = 0; i < L; i++) scanf(\"%d\", &a[i]);\n        // 請在此計算相鄰交換次數\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int L;\n        scanf(\"%d\", &L);\n        int a[60];\n        for (int i = 0; i < L; i++) scanf(\"%d\", &a[i]);\n        int swaps = 0;\n        for (int i = 0; i < L; i++) {\n            for (int j = 0; j < L - 1 - i; j++) {\n                if (a[j] > a[j + 1]) {\n                    int tmp = a[j];\n                    a[j] = a[j + 1];\n                    a[j + 1] = tmp;\n                    swaps++;\n                }\n            }\n        }\n        printf(\"Optimal train swapping takes %d swaps.\\n\", swaps);\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
-        "input": "123 456\n555 555\n123 594\n0 0\n",
-        "expected": "No carry operation.\n3 carry operations.\n1 carry operation.\n"
+        "input": "3\n3\n1 3 2\n4\n4 3 2 1\n2\n2 1\n",
+        "expected": "Optimal train swapping takes 1 swaps.\nOptimal train swapping takes 6 swaps.\nOptimal train swapping takes 1 swaps.\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "99999 1\n999 999\n1 999999999\n0 0\n",
-        "expected": "5 carry operations.\n3 carry operations.\n9 carry operations.\n"
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2\n1\n1\n0\n\n",
+        "expected": "Optimal train swapping takes 0 swaps.\nOptimal train swapping takes 0 swaps.\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "10 9\n1234 4321\n9 1\n0 0\n",
-        "expected": "No carry operation.\nNo carry operation.\n1 carry operation.\n"
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n5\n5 1 4 2 3\n6\n6 5 4 3 2 1\n",
+        "expected": "Optimal train swapping takes 6 swaps.\nOptimal train swapping takes 15 swaps.\n"
+      }
+    ]
+  },
+  {
+    "id": "490",
+    "uvaId": "00490",
+    "title": "Rotating Sentences",
+    "category": "二維陣列與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(總字元數)",
+    "spaceComplexity": "O(字串長度)",
+    "description": "輸入多行英文字句，請將整篇文章順時針旋轉 90 度輸出。原本最後一行的第 1 個字元會變成旋轉後第 1 行的第 1 個字元；長度不足的句子在旋轉後需要補空白對齊。",
+    "inputFormat": "輸入包含多行文字，每行不超過 100 個字元，總行數不超過 100 行。讀至 EOF 結束。",
+    "outputFormat": "將輸入的所有句子順時針旋轉 90 度後輸出，長度不足的句子在後續位置以空白補齊。",
+    "sampleInput": "Rene Decartes once said,\n\"I think, therefore I am.\"\n",
+    "sampleOutput": "\"R\nIe\n n\nte\nh\niD\nne\nkc\n,a\n r\ntt\nhe\nes\nr\neo\nfn\noc\nre\ne\n s\nIa\n i\nad\nm,\n.\n\"\n",
+    "hint": "【旋轉矩陣與空白補齊】\n1. 用 fgets() 依序讀入句子存入 lines[N][105]。注意去除尾端的 \\r\\n。\n2. 找出所有句子中最長長度 max_len。\n3. 外層迴圈跑 col 從 0 到 max_len - 1，內層迴圈跑 row 從 N - 1 倒退回 0。\n4. 若 lines[row] 長度小於等於 col，則印出空白 ' '，否則印出該字元。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nchar lines[105][105];\n\nint main() {\n    // 請使用 fgets 讀取所有行並順時針旋轉輸出\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nchar lines[105][105];\n\nint main() {\n    int n = 0;\n    int max_len = 0;\n    while (fgets(lines[n], 105, stdin)) {\n        int len = strlen(lines[n]);\n        while (len > 0 && (lines[n][len - 1] == '\\n' || lines[n][len - 1] == '\\r')) {\n            lines[n][--len] = '\\0';\n        }\n        if (len > max_len) max_len = len;\n        n++;\n    }\n    for (int col = 0; col < max_len; col++) {\n        for (int row = n - 1; row >= 0; row--) {\n            int len = strlen(lines[row]);\n            if (col < len) {\n                putchar(lines[row][col]);\n            } else {\n                putchar(' ');\n            }\n        }\n        putchar('\\n');\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "Rene Decartes once said,\n\"I think, therefore I am.\"\n",
+        "expected": "\"R\nIe\n n\nte\nh\niD\nne\nkc\n,a\n r\ntt\nhe\nes\nr\neo\nfn\noc\nre\ne\n s\nIa\n i\nad\nm,\n.\n\"\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "A\nBC\n",
+        "expected": "BA\nC\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "Hello\nWorld!\nCPE 49\n",
+        "expected": "CWH\nPoe\nErl\n ll\n4do\n9!\n"
+      }
+    ]
+  },
+  {
+    "id": "948",
+    "uvaId": "00948",
+    "title": "Fibonaccimal Base",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log N)",
+    "spaceComplexity": "O(1)",
+    "description": "任何正整數都可以唯一表示成非連續的費氏數列 (Zeckendorf's theorem) 之和，費氏數列定義為 F(1)=1, F(2)=2, F(3)=3, F(4)=5, F(5)=8...。給定一個正整數，輸出其費氏進制 (Fibonaccimal) 表示法，且相鄰兩個 1 不能連續出現。",
+    "inputFormat": "第一行有一個整數 N 代表測資筆數。接下來每行一個正整數 m (m < 100,000,000)。",
+    "outputFormat": "對每個整數 m，輸出 'm = [二進制串] (fib)'。",
+    "sampleInput": "10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n",
+    "sampleOutput": "1 = 1 (fib)\n2 = 10 (fib)\n3 = 100 (fib)\n4 = 101 (fib)\n5 = 1000 (fib)\n6 = 1001 (fib)\n7 = 1010 (fib)\n8 = 10000 (fib)\n9 = 10001 (fib)\n10 = 10010 (fib)\n",
+    "hint": "【貪婪法 (Greedy)】\n1. 建表算出 F[1]=1, F[2]=2, F[3]=3... 直到大於 100,000,000 (大約 40 項)。\n2. 從最大且小於等於 m 的費氏數開始，若 m >= F[i]，則該位數為 1 且 m -= F[i]，否則為 0。\n3. 注意前導零不輸出，找到第一個 1 之後開始印出。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請建費氏數列並進行貪婪分解\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nlong long fib[50];\n\nvoid init_fib() {\n    fib[1] = 1;\n    fib[2] = 2;\n    for (int i = 3; i < 45; i++) {\n        fib[i] = fib[i - 1] + fib[i - 2];\n    }\n}\n\nint main() {\n    init_fib();\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long m;\n        scanf(\"%lld\", &m);\n        printf(\"%lld = \", m);\n        int started = 0;\n        long long cur = m;\n        for (int i = 44; i >= 1; i--) {\n            if (cur >= fib[i]) {\n                putchar('1');\n                cur -= fib[i];\n                started = 1;\n            } else if (started) {\n                putchar('0');\n            }\n        }\n        printf(\" (fib)\\n\");\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n",
+        "expected": "1 = 1 (fib)\n2 = 10 (fib)\n3 = 100 (fib)\n4 = 101 (fib)\n5 = 1000 (fib)\n6 = 1001 (fib)\n7 = 1010 (fib)\n8 = 10000 (fib)\n9 = 10001 (fib)\n10 = 10010 (fib)\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2\n1\n100000000\n",
+        "expected": "1 = 1 (fib)\n100000000 = 10101001010100001010000010101010000100 (fib)\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "3\n13\n25\n99\n",
+        "expected": "13 = 100000 (fib)\n25 = 1000101 (fib)\n99 = 1000010010 (fib)\n"
       }
     ]
   },
@@ -278,36 +239,543 @@
     "title": "What's Cryptanalysis",
     "category": "字串處理與字元頻率",
     "difficulty": "★★☆☆☆",
-    "description": "密碼分析的初階方法是統計文本中各英文字母的出現次數。請統計輸入文章中所有大小寫英文字母的出現次數（不分大小寫），並依出現頻率排序後輸出。",
-    "inputFormat": "第一行有一個整數 n 代表後續有 n 行文字。接下來有 n 行文章。",
-    "outputFormat": "每行輸出一個大寫字母及其出現次數，以空格分開。排序規則：頻率由高到低；若頻率相同，則字母依 A 到 Z 字典序由小到大排。只輸出出現次數大於 0 的字母。",
-    "sampleInput": "3\nThis is a test.\nCount me 1 2 3 4 5.\nTwenty-two plus two is forty-four.\n",
-    "sampleOutput": "T 10\nO 9\nE 7\nU 6\nS 5\nI 4\nF 3\nR 3\nW 3\nA 2\nN 2\nP 2\nY 2\nC 1\nL 1\nM 1\n",
-    "hint": "【結構體排序 + 字母桶】\n1. 宣告長度 26 的結構體陣列 `struct { char ch; int count; } letters[26]`。\n2. 讀入每行字元，使用 `toupper()` 轉大寫，若是 'A'-'Z' 則對應計數加 1。\n3. 使用 `qsort` 進行自訂排序：\n   - count 越大排越前；\n   - 若 count 相同，ch 越小排越前。\n4. 只印出 count > 0 的字母。",
-    "template": "#include <stdio.h>\n#include <stdlib.h>\n#include <ctype.h>\n\ntypedef struct {\n    char ch;\n    int count;\n} Letter;\n\nint cmp(const void *a, const void *b) {\n    const Letter *l1 = (const Letter *)a;\n    const Letter *l2 = (const Letter *)b;\n    if (l1->count != l2->count)\n        return l2->count - l1->count; // 頻率由大到小\n    return l1->ch - l2->ch;           // 字母由小到大\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    getchar(); // 吃掉換行符號\n    // 請在此處統計並排序輸出\n    \n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <ctype.h>\n\ntypedef struct {\n    char ch;\n    int count;\n} Letter;\n\nint cmp(const void *a, const void *b) {\n    const Letter *l1 = (const Letter *)a;\n    const Letter *l2 = (const Letter *)b;\n    if (l1->count != l2->count)\n        return l2->count - l1->count;\n    return l1->ch - l2->ch;\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    getchar();\n    Letter arr[26];\n    for (int i = 0; i < 26; i++) {\n        arr[i].ch = 'A' + i;\n        arr[i].count = 0;\n    }\n    int c;\n    while ((c = getchar()) != EOF) {\n        if (isalpha(c)) {\n            c = toupper(c);\n            arr[c - 'A'].count++;\n        }\n    }\n    qsort(arr, 26, sizeof(Letter), cmp);\n    for (int i = 0; i < 26; i++) {\n        if (arr[i].count > 0) {\n            printf(\"%c %d\\n\", arr[i].ch, arr[i].count);\n        }\n    }\n    return 0;\n}\n",
     "timeLimit": 3.0,
     "memoryLimit": "32 MB",
     "timeComplexity": "O(|S| + 26 log 26)",
     "spaceComplexity": "O(26) 計數桶",
+    "description": "密碼分析的初階方法是統計文本中各英文字母的出現次數。請統計輸入文章中所有大小寫英文字母的出現次數（不分大小寫），並依出現頻率排序後輸出。",
+    "inputFormat": "第一行有一個整數 n 代表後續有 n 行文字。接下來有 n 行文章。",
+    "outputFormat": "每行輸出一個大寫字母及其出現次數，以空格分開。排序規則：頻率由高到低；若頻率相同，則字母依 A 到 Z 字典序由小到大排。只輸出出現次數大於 0 的字母。",
+    "sampleInput": "3\nThis is a test.\nCount me 1 2 3 4 5.\nTwenty-two plus two is forty-four.\n",
+    "sampleOutput": "T 9\nO 5\nS 5\nE 3\nI 3\nU 3\nW 3\nF 2\nN 2\nR 2\nY 2\nA 1\nC 1\nH 1\nL 1\nM 1\nP 1\n",
+    "hint": "【結構體排序 + 字母桶】\n1. 宣告長度 26 的結構體陣列 `struct { char ch; int count; } letters[26]`。\n2. 讀入每行字元，使用 `toupper()` 轉大寫，若是 'A'-'Z' 則對應計數加 1。\n3. 使用 `qsort` 進行自訂排序：\n   - count 越大排越前；\n   - 若 count 相同，ch 越小排越前。\n4. 只印出 count > 0 的字母。",
+    "template": "#include <stdio.h>\n#include <stdlib.h>\n#include <ctype.h>\n\ntypedef struct {\n    char ch;\n    int count;\n} Letter;\n\nint cmp(const void *a, const void *b) {\n    const Letter *l1 = (const Letter *)a;\n    const Letter *l2 = (const Letter *)b;\n    if (l1->count != l2->count)\n        return l2->count - l1->count; // 頻率由大到小\n    return l1->ch - l2->ch;           // 字母由小到大\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    getchar(); // 吃掉換行符號\n    // 請在此處統計並排序輸出\n    \n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <ctype.h>\n\ntypedef struct {\n    char ch;\n    int count;\n} Letter;\n\nint cmp(const void *a, const void *b) {\n    const Letter *l1 = (const Letter *)a;\n    const Letter *l2 = (const Letter *)b;\n    if (l1->count != l2->count)\n        return l2->count - l1->count;\n    return l1->ch - l2->ch;\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    getchar();\n    Letter arr[26];\n    for (int i = 0; i < 26; i++) {\n        arr[i].ch = 'A' + i;\n        arr[i].count = 0;\n    }\n    int c;\n    while ((c = getchar()) != EOF) {\n        if (isalpha(c)) {\n            c = toupper(c);\n            arr[c - 'A'].count++;\n        }\n    }\n    qsort(arr, 26, sizeof(Letter), cmp);\n    for (int i = 0; i < 26; i++) {\n        if (arr[i].count > 0) {\n            printf(\"%c %d\\n\", arr[i].ch, arr[i].count);\n        }\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
         "input": "3\nThis is a test.\nCount me 1 2 3 4 5.\nTwenty-two plus two is forty-four.\n",
-        "expected": "T 10\nO 9\nE 7\nU 6\nS 5\nI 4\nF 3\nR 3\nW 3\nA 2\nN 2\nP 2\nY 2\nC 1\nL 1\nM 1\n"
+        "expected": "T 9\nO 5\nS 5\nE 3\nI 3\nU 3\nW 3\nF 2\nN 2\nR 2\nY 2\nA 1\nC 1\nH 1\nL 1\nM 1\nP 1\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
+        "name": "極端邊界陷阱 (Corner Cases)",
         "input": "2\nABC\nCBA\n",
         "expected": "A 2\nB 2\nC 2\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
+        "name": "規模測試 (Scale Cases)",
         "input": "4\n1234567890!@#$%\nThe quick brown fox jumps over the lazy dog.\nCPE Level 1 Exam.\nAntigravity C Practice.\n",
         "expected": "E 8\nA 5\nC 5\nT 5\nI 4\nO 4\nR 4\nL 3\nP 3\nV 3\nG 2\nH 2\nM 2\nN 2\nU 2\nX 2\nY 2\nB 1\nD 1\nF 1\nJ 1\nK 1\nQ 1\nS 1\nW 1\nZ 1\n"
+      }
+    ]
+  },
+  {
+    "id": "10019",
+    "uvaId": "10019",
+    "title": "Funny Encryption Method",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log N)",
+    "spaceComplexity": "O(1)",
+    "description": "給定一個正整數 M，計算出兩個數字 b1 與 b2：\n1. b1 代表將 M 視為十進制數時，其轉為二進制表示法中 1 的個數。\n2. b2 代表將 M 的每一位數直接視為十六進制時（例如 265 視為 0x265），其轉為二進制中 1 的個數。",
+    "inputFormat": "第一行為整數 N 代表測資筆數。接下來 N 行每行包含一個整數 M (0 < M <= 9999)。",
+    "outputFormat": "對每組測資輸出 b1 和 b2，以空格隔開，每組一行。",
+    "sampleInput": "3\n265\n111\n1234\n",
+    "sampleOutput": "3 5\n6 3\n5 5\n",
+    "hint": "【位元計數】\n1. b1: 用 while(n > 0) { count += (n & 1); n >>= 1; } 計算十進制整數的 1 的個數。\n2. b2: 把 M 的每個十進制位數 d 拆解，將 d (0~9) 各自計算二進制 1 的個數並加總。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請計算 b1 與 b2\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint count_ones(int n) {\n    int c = 0;\n    while (n > 0) {\n        c += (n & 1);\n        n >>= 1;\n    }\n    return c;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int m;\n        scanf(\"%d\", &m);\n        int b1 = count_ones(m);\n        int b2 = 0;\n        int tmp = m;\n        while (tmp > 0) {\n            b2 += count_ones(tmp % 10);\n            tmp /= 10;\n        }\n        printf(\"%d %d\\n\", b1, b2);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "3\n265\n111\n1234\n",
+        "expected": "3 5\n6 3\n5 5\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2\n1\n9999\n",
+        "expected": "1 1\n8 8\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "3\n16\n256\n4095\n",
+        "expected": "1 3\n1 5\n12 5\n"
+      }
+    ]
+  },
+  {
+    "id": "10035",
+    "uvaId": "10035",
+    "title": "Primary Arithmetic",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log10 N)",
+    "spaceComplexity": "O(1)",
+    "description": "小學生做加法時最常在進位 (carry) 出錯。給定兩個正整數，計算將它們相加時總共發生了幾次進位運算。",
+    "inputFormat": "每行包含兩個不大於 10 位數的無號整數。當兩個數字皆為 0 時代表結束。",
+    "outputFormat": "若沒有進位，輸出 'No carry operation.'。\n若有 1 次進位，輸出 '1 carry operation.'。\n若有超過 1 次進位，輸出 'X carry operations.'（注意 operation 與 operations 的單複數差別！）。",
+    "sampleInput": "123 456\n555 555\n123 594\n0 0\n",
+    "sampleOutput": "No carry operation.\n3 carry operations.\n1 carry operation.\n",
+    "hint": "【模擬逐位相加】\n用 carry 變數記錄當前進位 (0 或 1)。\n每次取出 a % 10 與 b % 10，加上 carry：\n若 (a % 10 + b % 10 + carry) >= 10，則 carry = 1，計數器 count++；否則 carry = 0。\n重複直到 a == 0 且 b == 0。\n【魔鬼細節】：1 次進位時輸出 '1 carry operation.' (沒有 s)！",
+    "template": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        // 逐位相加計算進位\n        \n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        int carries = 0;\n        int carry = 0;\n        while (a > 0 || b > 0) {\n            int sum = (a % 10) + (b % 10) + carry;\n            if (sum >= 10) {\n                carry = 1;\n                carries++;\n            } else {\n                carry = 0;\n            }\n            a /= 10;\n            b /= 10;\n        }\n        if (carries == 0)\n            printf(\"No carry operation.\\n\");\n        else if (carries == 1)\n            printf(\"1 carry operation.\\n\");\n        else\n            printf(\"%d carry operations.\\n\", carries);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "123 456\n555 555\n123 594\n0 0\n",
+        "expected": "No carry operation.\n3 carry operations.\n1 carry operation.\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "99999 1\n999 999\n1 999999999\n0 0\n",
+        "expected": "5 carry operations.\n3 carry operations.\n9 carry operations.\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "10 9\n1234 4321\n9 1\n0 0\n",
+        "expected": "No carry operation.\nNo carry operation.\n1 carry operation.\n"
+      }
+    ]
+  },
+  {
+    "id": "10038",
+    "uvaId": "10038",
+    "title": "Jolly Jumpers",
+    "category": "排序與中位數",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "description": "若一個包含 n 個元素的數列，其所有相鄰兩數之差的絕對值，剛好完整包含 1 到 n-1 的所有整數，則此數列稱為 Jolly Jumper。長度為 1 的數列視為 Jolly Jumper。",
+    "inputFormat": "每行包含一組測資。第一個整數 n (0 < n < 3000)，接著有 n 個整數。讀至 EOF 結束。",
+    "outputFormat": "對每組測資，若為 Jolly 數列輸出 'Jolly'，否則輸出 'Not jolly'。",
+    "sampleInput": "4 1 4 2 3\n5 1 4 2 -1 6\n",
+    "sampleOutput": "Jolly\nNot jolly\n",
+    "hint": "【布林標記陣列】\n1. 開一個大小為 3005 的 bool 陣列 `diff[n]`。\n2. 計算 abs(a[i] - a[i-1])，若差值 d < 1 或 d >= n 或已出現過，則非 Jolly。\n3. n=1 時特判必為 Jolly。",
+    "template": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        // 請檢查相鄰差值是否剛好為 1 到 n-1\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint a[3005];\nint vis[3005];\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d\", &a[i]);\n        }\n        if (n == 1) {\n            printf(\"Jolly\\n\");\n            continue;\n        }\n        memset(vis, 0, sizeof(vis));\n        int ok = 1;\n        for (int i = 1; i < n; i++) {\n            int d = abs(a[i] - a[i - 1]);\n            if (d < 1 || d >= n || vis[d]) {\n                ok = 0;\n                break;\n            }\n            vis[d] = 1;\n        }\n        if (ok) printf(\"Jolly\\n\");\n        else printf(\"Not jolly\\n\");\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "4 1 4 2 3\n5 1 4 2 -1 6\n",
+        "expected": "Jolly\nNot jolly\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1 42\n2 1 2\n2 1 1\n",
+        "expected": "Jolly\nJolly\nNot jolly\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "4 1 3 2 4\n5 5 1 4 2 3\n",
+        "expected": "Not jolly\nJolly\n"
+      }
+    ]
+  },
+  {
+    "id": "10041",
+    "uvaId": "10041",
+    "title": "Vito's family",
+    "category": "排序與中位數",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(R log R) 排序或 O(R) 中位數",
+    "spaceComplexity": "O(R)",
+    "description": "黑手黨教父 Vito 要搬到紐約生活，他有非常多親戚住在同一條街上。這條街上的房子依門牌號碼排列。Vito 希望選一間房子住，使得他到所有親戚家的總距離最短。\n給定親戚家的門牌號碼，求 Vito 搬到最佳地點後，到所有親戚家的距離總和最小值。",
+    "inputFormat": "第一行有一個整數 T 代表測資筆數。接下來每組測資第一行整數 r (0 < r < 500) 代表親戚人數，接著有 r 個整數表示親戚的門牌號碼 s_i (0 <= s_i < 30000)。",
+    "outputFormat": "對每組測資，輸出最小的距離總和（整數）。",
+    "sampleInput": "2\n2 2 4\n3 2 4 6\n",
+    "sampleOutput": "2\n4\n",
+    "hint": "【思考邏輯與中位數定理】\n在一維軸線上，要讓 sum(|x - s_i|) 最小，最佳的 x 就是這群數字的「中位數 (Median)」。\n1. 將所有門牌號碼存入陣列並由小到大排序 (用 qsort)。\n2. 取中位數 mid = arr[r / 2]。\n3. 走訪每個親戚算 abs(arr[i] - mid) 並累加。",
+    "template": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    return (*(int *)a - *(int *)b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int r;\n        scanf(\"%d\", &r);\n        int street[505];\n        for (int i = 0; i < r; i++) {\n            scanf(\"%d\", &street[i]);\n        }\n        // 請在此處撰寫排序與中位數距離計算\n        \n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    return (*(int *)a - *(int *)b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int r;\n        scanf(\"%d\", &r);\n        int street[505];\n        for (int i = 0; i < r; i++) {\n            scanf(\"%d\", &street[i]);\n        }\n        qsort(street, r, sizeof(int), cmp);\n        int mid = street[r / 2];\n        int total = 0;\n        for (int i = 0; i < r; i++) {\n            int d = street[i] - mid;\n            if (d < 0) d = -d;\n            total += d;\n        }\n        printf(\"%d\\n\", total);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n2 2 4\n3 2 4 6\n",
+        "expected": "2\n4\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "3\n1 500\n4 10 10 10 10\n5 0 30000 15000 0 30000\n",
+        "expected": "0\n0\n60000\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n6 1 3 5 7 9 11\n8 100 200 400 800 1600 3200 6400 12800\n",
+        "expected": "18\n22500\n"
+      }
+    ]
+  },
+  {
+    "id": "10050",
+    "uvaId": "10050",
+    "title": "Hartals",
+    "category": "排序與中位數",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N * P)",
+    "spaceComplexity": "O(N)",
+    "description": "有幾個政黨在一個為期 N 天的模擬期間發動罷工（Hartal）。第 i 個政黨每隔 h_i 天罷工一次。星期五（第 6, 13, 20... 天）與星期六（第 7, 14, 21... 天）為週末假期，不論任何政黨罷工，均不計入損失的工作天。求在 N 天內總共損失了多少個工作天（多黨在同一天罷工只計一天）。",
+    "inputFormat": "第一行為測資組數 T。每組測資第一行為總天數 N (7 <= N <= 3650)，第二行為政黨數 P (1 <= P <= 100)，接下來 P 行每行一個整數代表罷工週期 h_i。",
+    "outputFormat": "對每組測資輸出損失的工作天數。",
+    "sampleInput": "2\n14\n3\n3\n4\n8\n100\n4\n12\n15\n25\n40\n",
+    "sampleOutput": "5\n15\n",
+    "hint": "【陣列標記與週末排除】\n1. 開大小 3655 的陣列標記哪些天數有罷工。\n2. 對每個政黨週期 h，標記所有 h, 2h, 3h... <= N。\n3. 走訪 1 到 N，若該天有罷工且 day % 7 != 6 且 day % 7 != 0，則計數器加 1。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        // 請計算損失的工作天\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint strike[3700];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, P;\n        scanf(\"%d %d\", &N, &P);\n        memset(strike, 0, sizeof(strike));\n        for (int i = 0; i < P; i++) {\n            int h;\n            scanf(\"%d\", &h);\n            for (int d = h; d <= N; d += h) {\n                strike[d] = 1;\n            }\n        }\n        int lost = 0;\n        for (int d = 1; d <= N; d++) {\n            if (strike[d] && (d % 7 != 6) && (d % 7 != 0)) {\n                lost++;\n            }\n        }\n        printf(\"%d\\n\", lost);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n14\n3\n3\n4\n8\n100\n4\n12\n15\n25\n40\n",
+        "expected": "5\n15\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n7\n1\n7\n",
+        "expected": "0\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1\n50\n3\n2\n5\n7\n",
+        "expected": "22\n"
+      }
+    ]
+  },
+  {
+    "id": "10055",
+    "uvaId": "10055",
+    "title": "Hashmat the Brave Warrior",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "勇敢的戰士 Hashmat 每次出征前，都會計算己方軍隊與敵方軍隊的人數差距。請寫一個程式計算兩支軍隊的士兵差額（絕對值）。",
+    "inputFormat": "每行包含兩個整數，代表 Hashmat 的軍隊與敵人的軍隊人數。數字可能高達 2^32。讀到 EOF 結束。",
+    "outputFormat": "對每行輸入，輸出兩數差額的絕對值，每組一行。",
+    "sampleInput": "10 12\n10 14\n100 200\n",
+    "sampleOutput": "2\n4\n100\n",
+    "hint": "【陷阱注意】\n軍隊人數可能達到 2^32，標準 32-bit signed int 上限只有 2*10^9，會發生溢位！\n必須使用 64-bit 整數 `long long`，格式化字串為 `%lld`。\n此外 Hashmat 的軍隊不一定比敵人少，請務必取絕對值或較大者減較小者。",
+    "template": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2) {\n        // 計算差的絕對值並印出\n        \n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    long long a, b;\n    while (scanf(\"%lld %lld\", &a, &b) == 2) {\n        long long diff = a - b;\n        if (diff < 0) diff = -diff;\n        printf(\"%lld\\n\", diff);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "10 12\n10 14\n100 200\n",
+        "expected": "2\n4\n100\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "4294967296 0\n0 4294967296\n4294967296 4294967296\n10000000000 20000000000\n",
+        "expected": "4294967296\n4294967296\n0\n10000000000\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "500 200\n999999999 1000000000\n12345678901 9876543210\n",
+        "expected": "300\n1\n2469135691\n"
+      }
+    ]
+  },
+  {
+    "id": "10056",
+    "uvaId": "10056",
+    "title": "What is the Probability?",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "有 N 個人輪流擲一顆骰子，擲出成功的機率為 p。從第 1 個人開始輪流擲，若無人成功則繼續從第 1 個人輪下一輪，直到有人成功即該人獲勝並結束遊戲。求第 I 個人獲勝的機率（精準至小數點後 4 位）。",
+    "inputFormat": "第一行包含測資組數 S。接下來每行三個數：N (人數, <= 1000)、p (單次成功機率, 0 <= p <= 1)、I (第幾個人, 1 <= I <= N)。",
+    "outputFormat": "對每組測資輸出該人獲勝機率，格式為 '0.0000'。",
+    "sampleInput": "2\n2 0.1666 1\n2 0.1666 2\n",
+    "sampleOutput": "0.5454\n0.4546\n",
+    "hint": "【等比級數公式】\n第 I 個人在第 1 輪獲勝機率為 (1-p)^(I-1) * p。\n在第 2 輪為 (1-p)^(N + I - 1) * p...\n總機率 = (1-p)^(I-1) * p / (1 - (1-p)^N)。\n注意特判：若 p == 0，機率直接輸出 0.0000，避免除以零！",
+    "template": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    int S;\n    if (scanf(\"%d\", &S) != 1) return 0;\n    while (S--) {\n        int n, i;\n        double p;\n        scanf(\"%d %lf %d\", &n, &p, &i);\n        // 請用等比級數公式計算並印出\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    int S;\n    if (scanf(\"%d\", &S) != 1) return 0;\n    while (S--) {\n        int n, i;\n        double p;\n        scanf(\"%d %lf %d\", &n, &p, &i);\n        if (p < 1e-9) {\n            printf(\"0.0000\\n\");\n            continue;\n        }\n        double q = 1.0 - p;\n        double ans = pow(q, i - 1) * p / (1.0 - pow(q, n));\n        printf(\"%.4f\\n\", ans);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n2 0.1666 1\n2 0.1666 2\n",
+        "expected": "0.5454\n0.4546\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n5 0.0 1\n",
+        "expected": "0.0000\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n3 0.5 1\n10 0.1 5\n",
+        "expected": "0.5714\n0.1007\n"
+      }
+    ]
+  },
+  {
+    "id": "10057",
+    "uvaId": "10057",
+    "title": "A mid-summer nights dream",
+    "category": "排序與中位數",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N log N)",
+    "spaceComplexity": "O(N)",
+    "description": "給定 n 個整數，尋找整數 A 使得 sum(|x_i - A|) 最小。請輸出：\n1. 最小的可能整數 A（若有多個中位數取較小者）。\n2. 輸入數列中有多少個數字等於最佳的 A（若中位數有區間，則統計落在 [mid1, mid2] 中的原本輸入數字個數）。\n3. 滿足條件的最佳整數 A 總共有幾種可能值。",
+    "inputFormat": "每組測資第一行包含整數 n (0 < n <= 1000000)。接下來 n 行每行一個整數。讀至 EOF 結束。",
+    "outputFormat": "對每組測資輸出三個整數，以空格隔開：最小的 A、原本輸入中符合最佳 A 的個數、可能的 A 總數。",
+    "sampleInput": "2\n10\n10\n4\n1\n2\n3\n4\n",
+    "sampleOutput": "10 2 1\n2 2 2\n",
+    "hint": "【中位數區間定理】\n排序後：\n若 n 為奇數：最佳 A 只有 mid = arr[(n-1)/2]，可能 A 只有 1 個。\n若 n 為偶數：最佳 A 可以是區間 [arr[(n-1)/2], arr[n/2]] 內的任何整數！可能的 A 總數為 arr[n/2] - arr[(n-1)/2] + 1。",
+    "template": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        // 請排序並找出中位數範圍\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <stdlib.h>\n\nint arr[1000005];\n\nint cmp(const void *a, const void *b) {\n    return (*(int *)a - *(int *)b);\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n        qsort(arr, n, sizeof(int), cmp);\n        int mid1 = arr[(n - 1) / 2];\n        int mid2 = arr[n / 2];\n        int count = 0;\n        for (int i = 0; i < n; i++) {\n            if (arr[i] == mid1 || arr[i] == mid2) count++;\n        }\n        int possible_A = mid2 - mid1 + 1;\n        printf(\"%d %d %d\\n\", mid1, count, possible_A);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n10\n10\n4\n1\n2\n3\n4\n",
+        "expected": "10 2 1\n2 2 2\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n5\n",
+        "expected": "5 1 1\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "5\n1\n2\n3\n4\n5\n",
+        "expected": "3 1 1\n"
+      }
+    ]
+  },
+  {
+    "id": "10062",
+    "uvaId": "10062",
+    "title": "Tell me the frequencies!",
+    "category": "字串解析與字元頻率",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N log N)",
+    "spaceComplexity": "O(1)",
+    "description": "給定一行字串，統計其中所有 ASCII 碼在 32 到 127 之間的字元出現頻率。依照頻率由小到大排序輸出；若頻率相同，則依照 ASCII 碼由大到小排序。兩組測資之間必須輸出一個空行。",
+    "inputFormat": "包含多組字串，每行不超過 1000 個字元。讀至 EOF 結束。",
+    "outputFormat": "對每組測資，輸出字元的 ASCII 碼與出現次數。每筆測資之間以空行隔開（第一筆前不可印空行，最後一筆後不可有多餘空行）。",
+    "sampleInput": "AAABBC\n122333\n",
+    "sampleOutput": "67 1\n66 2\n65 3\n\n49 1\n50 2\n51 3\n",
+    "hint": "【結構體自訂排序與輸出空行控制】\n1. 用 flag 控制空行：第一筆不印空行，第二筆開始在輸出前印 \\n。\n2. 排序規則：a.freq != b.freq 時照 freq 由小到大；freq 相同時照 ascii 碼由大到小排序！",
+    "template": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nint main() {\n    // 請統計 ASCII 頻率並依照雙重條件排序\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\ntypedef struct {\n    int ascii;\n    int freq;\n} CharFreq;\n\nint cmp(const void *a, const void *b) {\n    CharFreq *ca = (CharFreq *)a;\n    CharFreq *cb = (CharFreq *)b;\n    if (ca->freq != cb->freq) {\n        return ca->freq - cb->freq;\n    }\n    return cb->ascii - ca->ascii;\n}\n\nint main() {\n    char line[1005];\n    int first = 1;\n    while (fgets(line, 1005, stdin)) {\n        int counts[150] = {0};\n        int len = strlen(line);\n        for (int i = 0; i < len; i++) {\n            int c = (unsigned char)line[i];\n            if (c >= 32 && c < 128) {\n                counts[c]++;\n            }\n        }\n        CharFreq items[150];\n        int k = 0;\n        for (int i = 32; i < 128; i++) {\n            if (counts[i] > 0) {\n                items[k].ascii = i;\n                items[k].freq = counts[i];\n                k++;\n            }\n        }\n        qsort(items, k, sizeof(CharFreq), cmp);\n        if (!first) printf(\"\\n\");\n        first = 0;\n        for (int i = 0; i < k; i++) {\n            printf(\"%d %d\\n\", items[i].ascii, items[i].freq);\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "AAABBC\n122333\n",
+        "expected": "67 1\n66 2\n65 3\n\n49 1\n50 2\n51 3\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "a\n",
+        "expected": "97 1\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "hello world\n",
+        "expected": "119 1\n114 1\n104 1\n101 1\n100 1\n32 1\n111 2\n108 3\n"
+      }
+    ]
+  },
+  {
+    "id": "10071",
+    "uvaId": "10071",
+    "title": "Back to High School Physics",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "某物體由靜止開始以等加速度運動。已知在時間 t 時其速度為 v。求在 2t 時間內此物體移動的總位移。",
+    "inputFormat": "每行有兩個整數 v (-100 <= v <= 100) 與 t (0 <= t <= 200)。讀至 EOF 結束。",
+    "outputFormat": "每組輸入輸出一個整數，代表在時間 2t 的位移。",
+    "sampleInput": "0 3\n5 12\n",
+    "sampleOutput": "0\n120\n",
+    "hint": "【物理公式秒殺】\n初速 v0 = 0，a = v / t。\n在時間 2t 時，位移 S = 0.5 * a * (2t)^2 = 0.5 * (v / t) * 4t^2 = 2 * v * t。\n答案直接輸出 2 * v * t 即可！",
+    "template": "#include <stdio.h>\n\nint main() {\n    int v, t;\n    while (scanf(\"%d %d\", &v, &t) == 2) {\n        // 請輸出答案\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    int v, t;\n    while (scanf(\"%d %d\", &v, &t) == 2) {\n        printf(\"%d\\n\", 2 * v * t);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "0 3\n5 12\n",
+        "expected": "0\n120\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "-100 200\n100 0\n-50 10\n0 0\n",
+        "expected": "-40000\n0\n-1000\n0\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "100 200\n-80 150\n60 70\n",
+        "expected": "40000\n-24000\n8400\n"
+      }
+    ]
+  },
+  {
+    "id": "10093",
+    "uvaId": "10093",
+    "title": "An Easy Problem!",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "description": "給定一個由數字 (0-9)、大寫字母 (A-Z) 和小寫字母 (a-z) 組成的字串，其代表某個 R 進制下的整數（0~9 代表 0~9，A~Z 代表 10~35，a~z 代表 36~61）。求最小的進制 R (2 <= R <= 62)，使得該整數能被 (R - 1) 整除。若不存在則輸出 'such number is impossible!'。",
+    "inputFormat": "每行包含一個字串，可能帶有 '+' 或 '-' 號。字串長度小於 10000。讀至 EOF 結束。",
+    "outputFormat": "對每組輸入，輸出符合條件的最小進制 R；若不存在則輸出 'such number is impossible!'。",
+    "sampleInput": "3\n5\nA\n",
+    "sampleOutput": "4\n6\n11\n",
+    "hint": "【進制與同餘性質】\n在 R 進制下，一個數 N 模 (R-1) 等於其「各個位數數值之和」模 (R-1)！（類似十進制下模 9 等於數字和）。\n1. 找出字串中最大的單一字元數值 max_d。最小進制至少必須為 max(2, max_d + 1)。\n2. 算所有字元數值和 sum。\n3. 從 R = max(2, max_d + 1) 到 62 測試：若 sum % (R - 1) == 0，即找到解答！",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    // 請計算所有字元數值和與最小可能進制\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint val(char c) {\n    if (c >= '0' && c <= '9') return c - '0';\n    if (c >= 'A' && c <= 'Z') return c - 'A' + 10;\n    if (c >= 'a' && c <= 'z') return c - 'a' + 36;\n    return -1;\n}\n\nint main() {\n    char s[10005];\n    while (scanf(\"%s\", s) == 1) {\n        int max_d = 1;\n        long long sum = 0;\n        int len = strlen(s);\n        for (int i = 0; i < len; i++) {\n            int v = val(s[i]);\n            if (v >= 0) {\n                sum += v;\n                if (v > max_d) max_d = v;\n            }\n        }\n        int found = 0;\n        for (int r = max_d + 1; r <= 62; r++) {\n            if (sum % (r - 1) == 0) {\n                printf(\"%d\\n\", r);\n                found = 1;\n                break;\n            }\n        }\n        if (!found) {\n            printf(\"such number is impossible!\\n\");\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "3\n5\nA\n",
+        "expected": "4\n6\n11\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "0\n+0\n-1\n",
+        "expected": "2\n2\n2\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "z\n1234567890\n",
+        "expected": "62\n10\n"
+      }
+    ]
+  },
+  {
+    "id": "10101",
+    "uvaId": "10101",
+    "title": "Bangla Numbers",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log N)",
+    "spaceComplexity": "O(1)",
+    "description": "孟加拉數字系統採用非十進制位數單位：kuti (10,000,000)、lakh (100,000)、hajar (1,000)、shata (100)。給定一個不高於 15 位數的非負整數，請將其轉換為孟加拉文字表示法。若數字大於等於 1 kuti，則超過部分可遞迴再次套用 kuti/lakh/hajar/shata 拆解。",
+    "inputFormat": "每行包含一個非負整數 (<= 999,999,999,999,999)。讀至 EOF 結束。",
+    "outputFormat": "對每筆輸入輸出格式化行號與拆解文字，例如 '   1. 45 lakh 89 hajar 7 shata 45'。行號需右對齊 4 格。",
+    "sampleInput": "23764\n4589745\n0\n",
+    "sampleOutput": "   1. 23 hajar 7 shata 64\n   2. 45 lakh 89 hajar 7 shata 45\n   3. 0\n",
+    "hint": "【遞迴結構設計】\n1. 單位除數：kuti=10000000, lakh=100000, hajar=1000, shata=100。\n2. 若 n >= 10000000，先遞迴呼叫 bangla(n / 10000000)，印出 ' kuti'，再處理剩餘的 n %= 10000000。\n3. 注意特判 n == 0 時印出 0。",
+    "template": "#include <stdio.h>\n\nvoid bangla(long long n) {\n    // 請撰寫遞迴拆解函數\n}\n\nint main() {\n    long long n;\n    int kase = 1;\n    while (scanf(\"%lld\", &n) == 1) {\n        printf(\"%4d. \", kase++);\n        if (n == 0) printf(\"0\");\n        else bangla(n);\n        printf(\"\\n\");\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nvoid bangla(long long n) {\n    if (n >= 10000000) {\n        bangla(n / 10000000);\n        printf(\" kuti\");\n        n %= 10000000;\n    }\n    if (n >= 100000) {\n        bangla(n / 100000);\n        printf(\" lakh\");\n        n %= 100000;\n    }\n    if (n >= 1000) {\n        bangla(n / 1000);\n        printf(\" hajar\");\n        n %= 1000;\n    }\n    if (n >= 100) {\n        bangla(n / 100);\n        printf(\" shata\");\n        n %= 100;\n    }\n    if (n > 0) {\n        printf(\" %lld\", n);\n    }\n}\n\nint main() {\n    long long n;\n    int kase = 1;\n    while (scanf(\"%lld\", &n) == 1) {\n        printf(\"%4d.\", kase++);\n        if (n == 0) {\n            printf(\" 0\\n\");\n        } else {\n            bangla(n);\n            printf(\"\\n\");\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "23764\n4589745\n0\n",
+        "expected": "   1. 23 hajar 7 shata 64\n   2. 45 lakh 89 hajar 7 shata 45\n   3. 0\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "0\n10000000\n",
+        "expected": "   1. 0\n   2. 1 kuti\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1000000000\n9999999999\n",
+        "expected": "   1. 1 shata kuti\n   2. 9 shata 99 kuti 99 lakh 99 hajar 9 shata 99\n"
+      }
+    ]
+  },
+  {
+    "id": "10170",
+    "uvaId": "10170",
+    "title": "The Hotel with Infinite Rooms",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(sqrt(D))",
+    "spaceComplexity": "O(1)",
+    "description": "一家有無限間客房的奇特旅社，接待旅遊團體。大小為 S 的團體會入住 S 間房間並住 S 天。接著下一個團體人數為 S + 1，會住 S + 1 天；再下一個為 S + 2 人住 S + 2 天，以此類推。給定最初團體人數 S 與天數 D，求在第 D 天時，住在旅社中的團體人數是多少。",
+    "inputFormat": "每行包含兩個正整數 S (1 <= S <= 10000) 與 D (1 <= D < 10^15)。讀至 EOF 結束。",
+    "outputFormat": "對每組輸入，輸出一行代表在第 D 天時的團體大小。",
+    "sampleInput": "1 6\n3 10\n3 14\n",
+    "sampleOutput": "3\n5\n6\n",
+    "hint": "【等差級數累加】\n第 1 個團體涵蓋天數 1 ~ S，第 2 個涵蓋 S+1 ~ S + (S+1)...\n用 while 迴圈或數學公式：每次 D -= S, S++，直到 D <= 0，此時 S - 1 即為答案。注意 D 高達 10^15，變數必須宣告為 `long long`！",
+    "template": "#include <stdio.h>\n\nint main() {\n    long long S, D;\n    while (scanf(\"%lld %lld\", &S, &D) == 2) {\n        // 計算第 D 天的團體大小\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    long long S, D;\n    while (scanf(\"%lld %lld\", &S, &D) == 2) {\n        while (D > S) {\n            D -= S;\n            S++;\n        }\n        printf(\"%lld\\n\", S);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "1 6\n3 10\n3 14\n",
+        "expected": "3\n5\n6\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1 1\n10000 10000\n",
+        "expected": "1\n10000\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "5 1000000000000\n",
+        "expected": "1414214\n"
       }
     ]
   },
@@ -317,6 +785,10 @@
     "title": "Minesweeper",
     "category": "二維陣列與狀態模擬",
     "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N × M)",
+    "spaceComplexity": "O(N × M)",
     "description": "經典踩地雷遊戲。給定一個 n 行 m 列的網格地圖，其中 '*' 代表地雷，'.' 代表安全格。請將每格安全格替換為其相鄰 8 個方向上的地雷總數。",
     "inputFormat": "包含多組測資。每組第一行為 n 和 m (0 < n, m <= 100)。接下來 n 行每行長度為 m 的字串。當 n = 0 且 m = 0 時輸入結束。",
     "outputFormat": "對每組測資，輸出 'Field #x:'，接著輸出填滿數字與地雷的地圖。多組測資之間必須以一個空行隔開（注意最後一組測資後面不要有多餘空行）！",
@@ -325,10 +797,6 @@
     "hint": "【八方位掃描 + 測資格式空行】\n1. 八個方向偏移量：\n   int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};\n   int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};\n2. 對每個安全格 '.'，檢查 8 個相鄰座標 (r+dr[k], c+dc[k])，若在邊界內且是 '*' 則 count++。\n3. 【格式陷阱】：測資之間要有空行！技巧：定義 case_count，若 case_count > 1 則在印出 'Field #x:' 前先印一個 '\\n'。",
     "template": "#include <stdio.h>\n\nint main() {\n    int n, m;\n    int field_num = 1;\n    while (scanf(\"%d %d\", &n, &m) == 2 && (n != 0 || m != 0)) {\n        char grid[105][105];\n        for (int i = 0; i < n; i++) {\n            scanf(\"%s\", grid[i]);\n        }\n        // 請在此處處理踩地雷計數與格式化輸出\n        \n        field_num++;\n    }\n    return 0;\n}\n",
     "solution": "#include <stdio.h>\n\nconst int dr[8] = {-1, -1, -1,  0, 0,  1,  1, 1};\nconst int dc[8] = {-1,  0,  1, -1, 1, -1,  0, 1};\n\nint main() {\n    int n, m;\n    int field_num = 1;\n    while (scanf(\"%d %d\", &n, &m) == 2 && (n != 0 || m != 0)) {\n        if (field_num > 1) printf(\"\\n\");\n        printf(\"Field #%d:\\n\", field_num++);\n        char grid[105][105];\n        for (int i = 0; i < n; i++) {\n            scanf(\"%s\", grid[i]);\n        }\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                if (grid[i][j] == '*') {\n                    putchar('*');\n                } else {\n                    int count = 0;\n                    for (int k = 0; k < 8; k++) {\n                        int ni = i + dr[k];\n                        int nj = j + dc[k];\n                        if (ni >= 0 && ni < n && nj >= 0 && nj < m && grid[ni][nj] == '*') {\n                            count++;\n                        }\n                    }\n                    putchar('0' + count);\n                }\n            }\n            putchar('\\n');\n        }\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(N × M)",
-    "spaceComplexity": "O(N × M)",
     "testCases": [
       {
         "id": 1,
@@ -338,210 +806,288 @@
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
+        "name": "極端邊界陷阱 (Corner Cases)",
         "input": "1 1\n*\n1 1\n.\n2 2\n**\n**\n0 0\n",
         "expected": "Field #1:\n*\n\nField #2:\n0\n\nField #3:\n**\n**\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
+        "name": "規模測試 (Scale Cases)",
         "input": "1 6\n.*.*.*\n6 1\n*\n.\n*\n.\n*\n.\n0 0\n",
         "expected": "Field #1:\n1*2*2*\n\nField #2:\n*\n2\n*\n2\n*\n1\n"
       }
     ]
   },
   {
-    "id": "10812",
-    "uvaId": "10812",
-    "title": "Beat the Spread!",
+    "id": "10190",
+    "uvaId": "10190",
+    "title": "Divide, But Not Quite Conquer!",
     "category": "基礎數論與模擬",
     "difficulty": "★☆☆☆☆",
-    "description": "美式足球賭盤中，已知兩支球隊最終得分的總和 s 與兩隊得分的差值絕對值 d。求這兩隊可能的得分各是多少（分數必須為非負整數）。",
-    "inputFormat": "第一行包含測資組數 T。接下來每行有兩個非負整數 s 和 d。",
-    "outputFormat": "對每組測資，由大到小輸出兩隊的得分（以空格隔開）。若無解則輸出 'impossible'。",
-    "sampleInput": "2\n40 20\n20 40\n",
-    "sampleOutput": "30 10\nimpossible\n",
-    "hint": "【二元一次聯立方程與無解條件】\n設較大得分為 x，較小得分為 y：\nx + y = s\nx - y = d\n相加得 2x = s + d => x = (s + d) / 2，y = s - x。\n無解情況：\n1. s < d（總和小於差值，不可能）\n2. (s + d) % 2 != 0（無法整除，得分必須為整數）\n符合無解條件直接印 'impossible'，否則印 'x y'。",
-    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long s, d;\n        scanf(\"%lld %lld\", &s, &d);\n        // 請在此處判斷是否有解並輸出\n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long s, d;\n        scanf(\"%lld %lld\", &s, &d);\n        if (s < d || (s + d) % 2 != 0) {\n            printf(\"impossible\\n\");\n        } else {\n            long long x = (s + d) / 2;\n            long long y = s - x;\n            printf(\"%lld %lld\\n\", x, y);\n        }\n    }\n    return 0;\n}\n",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log_m N)",
+    "spaceComplexity": "O(log_m N)",
+    "description": "給定兩整數 n 與 m。判斷 n 是否能透過不斷整除 m 最終達到 1（即 n 是否為 m 的正整數冪次）。若可以，依序輸出 n, n/m, n/(m^2) ... 1；若過程中出現無法整除，或 m <= 1，或 n < 2，則輸出 'Boring!'。",
+    "inputFormat": "每行有兩個非負整數 n 與 m (0 <= n, m < 2,000,000,000)。讀至 EOF 結束。",
+    "outputFormat": "若為合格序列，輸出一行序列數字，以空格隔開；否則輸出 'Boring!'。",
+    "sampleInput": "125 5\n30 3\n80 2\n81 3\n",
+    "sampleOutput": "125 25 5 1\nBoring!\nBoring!\n81 27 9 3 1\n",
+    "hint": "【邊界條件極大陷阱】\n1. 若 n < 2 或 m < 2，絕對無法除到 1，必為 'Boring!'！（若 m=1 或 m=0 會造成無窮迴圈或浮點例外）。\n2. 若 n < m 也直接 Boring!。\n3. 先驗證是否每次 n % m == 0，記錄在陣列後一次印出。",
+    "template": "#include <stdio.h>\n\nint main() {\n    long long n, m;\n    while (scanf(\"%lld %lld\", &n, &m) == 2) {\n        // 請注意 m <= 1 或 n < 2 的無窮迴圈邊界！\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nlong long seq[65];\n\nint main() {\n    long long n, m;\n    while (scanf(\"%lld %lld\", &n, &m) == 2) {\n        if (n < 2 || m < 2) {\n            printf(\"Boring!\\n\");\n            continue;\n        }\n        int ok = 1;\n        int len = 0;\n        long long cur = n;\n        seq[len++] = cur;\n        while (cur > 1) {\n            if (cur % m != 0) {\n                ok = 0;\n                break;\n            }\n            cur /= m;\n            seq[len++] = cur;\n        }\n        if (!ok) {\n            printf(\"Boring!\\n\");\n        } else {\n            for (int i = 0; i < len; i++) {\n                printf(\"%lld%s\", seq[i], (i == len - 1) ? \"\" : \" \");\n            }\n            printf(\"\\n\");\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "125 5\n30 3\n80 2\n81 3\n",
+        "expected": "125 25 5 1\nBoring!\nBoring!\n81 27 9 3 1\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "0 0\n1 0\n2 1\n1 2\n",
+        "expected": "Boring!\nBoring!\nBoring!\nBoring!\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1024 2\n1000000 10\n",
+        "expected": "1024 512 256 128 64 32 16 8 4 2 1\n1000000 100000 10000 1000 100 10 1\n"
+      }
+    ]
+  },
+  {
+    "id": "10193",
+    "uvaId": "10193",
+    "title": "All You Need Is Love",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(字串長度 + log N)",
+    "spaceComplexity": "O(1)",
+    "description": "給定兩對二進制字串 S1 與 S2。若這兩個數字存在一個大於 1 的公因數（即 GCD(N1, N2) > 1），則代表存在共同的「愛之字串」，輸出 'All you need is love!'；若最大公因數為 1（互質），則輸出 'Love is not all you need!'。",
+    "inputFormat": "第一行包含測資組數 N。接下來每組測資有兩行，各為一個由 '0' 和 '1' 組成的字串，長度不超過 30，且首位為 '1'。",
+    "outputFormat": "對每組測資輸出 'Pair #P: [結果]'，其中 P 為組別編號（從 1 開始）。",
+    "sampleInput": "5\n110\n10011\n11010\n100\n110\n1011\n100\n100\n10\n100\n",
+    "sampleOutput": "Pair #1: Love is not all you need!\nPair #2: All you need is love!\nPair #3: Love is not all you need!\nPair #4: All you need is love!\nPair #5: All you need is love!\n",
+    "hint": "【二進制轉整數與 GCD】\n長度小於 30，轉為十進制後小於 2^30，完全在 32-bit / 64-bit int 範圍內！\n1. 寫一個函數將二進制字串轉為 long long。\n2. 使用輾轉相除法算出 GCD(n1, n2)。\n3. 若 gcd > 1 輸出 All you need is love!，否則輸出 Love is not all you need!。",
+    "template": "#include <stdio.h>\n\nlong long gcd(long long a, long long b) {\n    return b == 0 ? a : gcd(b, a % b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請讀入二進制字串轉數值並求 GCD\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nlong long gcd(long long a, long long b) {\n    return b == 0 ? a : gcd(b, a % b);\n}\n\nlong long to_val(const char *s) {\n    long long v = 0;\n    for (int i = 0; s[i]; i++) {\n        v = (v << 1) + (s[i] - '0');\n    }\n    return v;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char s1[40], s2[40];\n    for (int p = 1; p <= T; p++) {\n        scanf(\"%s %s\", s1, s2);\n        long long n1 = to_val(s1);\n        long long n2 = to_val(s2);\n        if (gcd(n1, n2) > 1) {\n            printf(\"Pair #%d: All you need is love!\\n\", p);\n        } else {\n            printf(\"Pair #%d: Love is not all you need!\\n\", p);\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "5\n110\n10011\n11010\n100\n110\n1011\n100\n100\n10\n100\n",
+        "expected": "Pair #1: Love is not all you need!\nPair #2: All you need is love!\nPair #3: Love is not all you need!\nPair #4: All you need is love!\nPair #5: All you need is love!\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n1\n1\n",
+        "expected": "Pair #1: Love is not all you need!\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n111111111\n111\n1010101\n101\n",
+        "expected": "Pair #1: All you need is love!\nPair #2: All you need is love!\n"
+      }
+    ]
+  },
+  {
+    "id": "10221",
+    "uvaId": "10221",
+    "title": "Satellites",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
     "timeLimit": 3.0,
     "memoryLimit": "32 MB",
     "timeComplexity": "O(1)",
     "spaceComplexity": "O(1)",
+    "description": "兩顆衛星在地球上方同一個軌道高度 s (km) 運行。地球半徑為 6440 km。給定衛星離地高度 s 以及兩顆衛星與地心夾角 a。角度單位可能是度 (deg) 或分 (min)。求這兩顆衛星沿軌道運行的弧長 (arc distance) 與直線距離（弦長 chord distance）。",
+    "inputFormat": "每行包含三個元素：整數 s、整數 a、以及字串單位 ('deg' 或 'min')。讀至 EOF 結束。",
+    "outputFormat": "對每組輸入，輸出弧長與弦長，精確到小數點後 6 位，以空格隔開。",
+    "sampleInput": "500 30 deg\n700 60 min\n",
+    "sampleOutput": "3633.775503 3592.408346\n124.616509 124.614927\n",
+    "hint": "【幾何公式與角度大於 180 特判】\n軌道半徑 R = 6440 + s。\n若單位是 'min'，先除以 60 換算為度。\n若角度 a > 180 度，兩點間的短劣弧夾角為 360 - a 度！\n弧度 rad = a * PI / 180。\n弧長 = R * rad。\n弦長 = 2 * R * sin(rad / 2)。",
+    "template": "#include <stdio.h>\n#include <math.h>\n#include <string.h>\n\n#define PI 3.14159265358979323846\n\nint main() {\n    double s, a;\n    char unit[10];\n    while (scanf(\"%lf %lf %s\", &s, &a, unit) == 3) {\n        // 請計算弧長與弦長\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <math.h>\n#include <string.h>\n\n#define PI 3.14159265358979323846\n\nint main() {\n    double s, a;\n    char unit[10];\n    while (scanf(\"%lf %lf %s\", &s, &a, unit) == 3) {\n        if (strcmp(unit, \"min\") == 0) {\n            a /= 60.0;\n        }\n        if (a > 180.0) a = 360.0 - a;\n        double r = 6440.0 + s;\n        double rad = a * PI / 180.0;\n        double arc = r * rad;\n        double chord = 2.0 * r * sin(rad / 2.0);\n        printf(\"%.6f %.6f\\n\", arc, chord);\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
-        "input": "2\n40 20\n20 40\n",
-        "expected": "30 10\nimpossible\n"
+        "input": "500 30 deg\n700 60 min\n",
+        "expected": "3633.775503 3592.408346\n124.616509 124.614927\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "4\n0 0\n10 10\n5 6\n10 3\n",
-        "expected": "0 0\n10 0\nimpossible\nimpossible\n"
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "0 180 deg\n100 360 deg\n",
+        "expected": "20231.856689 12880.000000\n0.000000 0.000000\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "3\n10000 2000\n99999 1\n100 99\n",
-        "expected": "6000 4000\n50000 49999\nimpossible\n"
+        "name": "規模測試 (Scale Cases)",
+        "input": "1000 45 deg\n2000 90 deg\n",
+        "expected": "5843.362336 5694.329474\n13257.520998 11935.962466\n"
       }
     ]
   },
   {
-    "id": "11332",
-    "uvaId": "11332",
-    "title": "Summing Digits",
-    "category": "基礎數論與模擬",
+    "id": "10222",
+    "uvaId": "10222",
+    "title": "Decode the Mad man",
+    "category": "字串解析與字元頻率",
     "difficulty": "★☆☆☆☆",
-    "description": "給定一個正整數 n，將其各個位數相加得到一個新整數。若此整數仍大於等於 10，則繼續對其位數相加，直到得到個位數為止。這個結果稱為 n 的數位根 (Digital Root)。",
-    "inputFormat": "每行包含一個正整數 n (n <= 2*10^9)。當 n = 0 時輸入結束。",
-    "outputFormat": "對每個整數，輸出其最終的個位數結果，每組一行。",
-    "sampleInput": "2\n11\n47\n1234567892\n0\n",
-    "sampleOutput": "2\n2\n2\n2\n",
-    "hint": "【直接雙層 while 迴圈】\n外層迴圈：while (n >= 10)\n內層迴圈：sum = 0; while (n > 0) { sum += n % 10; n /= 10; } n = sum;\n（數學小知識：這題本質就是 n % 9，若餘數為 0 且 n > 0 則為 9，但直接模擬最不容易出錯）。",
-    "template": "#include <stdio.h>\n\nint main() {\n    long long n;\n    while (scanf(\"%lld\", &n) == 1 && n != 0) {\n        // 請在此處計算數位根並輸出\n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n\nint main() {\n    long long n;\n    while (scanf(\"%lld\", &n) == 1 && n != 0) {\n        while (n >= 10) {\n            long long sum = 0;\n            while (n > 0) {\n                sum += n % 10;\n                n /= 10;\n            }\n            n = sum;\n        }\n        printf(\"%lld\\n\", n);\n    }\n    return 0;\n}\n",
     "timeLimit": 3.0,
     "memoryLimit": "32 MB",
-    "timeComplexity": "O(log N)",
+    "timeComplexity": "O(N)",
     "spaceComplexity": "O(1)",
+    "description": "瘋子的鍵盤打字習慣：他在鍵盤上按下的每一個鍵，實際上是他想輸入字元「往右偏移兩格」的按鍵。給定瘋子輸入的文字，請將每個字元轉為小寫後，向左位移兩格還原其原始字元。空白與換行符號維持不變。",
+    "inputFormat": "輸入包含多行文字。讀至 EOF 結束。",
+    "outputFormat": "輸出解碼後的英文字句。",
+    "sampleInput": "k[r dyt I[o\\n",
+    "sampleOutput": "how are you[v\n",
+    "hint": "【鍵盤字串查表法】\n將鍵盤所有列串成一個字串：\n`char kb[] = \"`1234567890-=qwertyuiop[]\\\\asdfghjkl;'zxcvbnm,./\";`\n走訪輸入字串，先轉小寫，若在 kb 中找到位置 pos，則輸出 kb[pos - 2]；空白則照常輸出。",
+    "template": "#include <stdio.h>\n#include <string.h>\n#include <ctype.h>\n\nchar kb[] = \"`1234567890-=qwertyuiop[]\\\\asdfghjkl;'zxcvbnm,./\";\n\nint main() {\n    // 請使用鍵盤查表法解碼\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n#include <ctype.h>\n\nchar kb[] = \"`1234567890-=qwertyuiop[]\\\\asdfghjkl;'zxcvbnm,./\";\n\nint main() {\n    int c;\n    while ((c = getchar()) != EOF) {\n        c = tolower(c);\n        char *p = strchr(kb, c);\n        if (p && (p - kb >= 2)) {\n            putchar(*(p - 2));\n        } else {\n            putchar(c);\n        }\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
-        "input": "2\n11\n47\n1234567892\n0\n",
-        "expected": "2\n2\n2\n2\n"
+        "input": "k[r dyt I[o\\n",
+        "expected": "how are you[v\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "1\n9\n18\n999999999\n0\n",
-        "expected": "1\n9\n9\n9\n"
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "e\n",
+        "expected": "q\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "2000000000\n1999999999\n1000000001\n0\n",
-        "expected": "2\n1\n2\n"
+        "name": "規模測試 (Scale Cases)",
+        "input": "p ; /\\n",
+        "expected": "i k ,[v\n"
       }
     ]
   },
   {
-    "id": "11321",
-    "uvaId": "11321",
-    "title": "Sort! Sort!! and Sort!!!",
+    "id": "10226",
+    "uvaId": "10226",
+    "title": "Hardwood species",
     "category": "排序與中位數",
-    "difficulty": "★★★☆☆",
-    "description": "給定 N 個整數與一個整數 M。請依照以下規則將這 N 個整數排序：\n1. 每個數以除以 M 的餘數 (n % M) 由小到大排序。\n2. 若兩數除以 M 的餘數相同：\n   - 若一奇一偶，奇數排在偶數前面。\n   - 若兩數皆為奇數，數值較大的排在前面（降冪）。\n   - 若兩數皆為偶數，數值較小的排在前面（升冪）。",
-    "inputFormat": "每組測資第一行有 N (0 < N <= 10000) 和 M (0 < M <= 10000)。接下來 N 行每行一個整數。當 N = 0 且 M = 0 代表輸入結束。",
-    "outputFormat": "對每組測資，第一行輸出 'N M'，接著輸出排序後的 N 個整數。最後輸入 0 0 也要輸出 '0 0' 結尾！",
-    "sampleInput": "15 3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n0 0\n",
-    "sampleOutput": "15 3\n15\n9\n3\n6\n12\n13\n7\n1\n4\n10\n11\n5\n2\n8\n14\n0 0\n",
-    "hint": "【多條件比較器 + 負數餘數陷阱】\n本題是 qsort 自訂比較器的終極考驗！\n【致命陷阱】：\n1. 奇偶判定：在 C 語言中，負奇數 % 2 等於 -1！所以判斷奇數要用 (x % 2 != 0)，不能用 (x % 2 == 1)！\n2. 餘數可能為負值，C 語言的 -5 % 3 是 -2，題目的餘數規則直接使用 a % M 即可。\n3. 最後輸入 0 0 時，也要輸出 '0 0'！",
-    "template": "#include <stdio.h>\n#include <stdlib.h>\n\nint M;\n\nint cmp(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    // 請在此處實現規則 1, 2-1, 2-2, 2-3 的比較邏輯\n    return 0;\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d %d\", &n, &M) == 2) {\n        printf(\"%d %d\\n\", n, M);\n        if (n == 0 && M == 0) break;\n        int arr[10005];\n        for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n        // 呼叫 qsort 並輸出\n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n#include <stdlib.h>\n\nint M;\n\nint is_odd(int x) {\n    return (x % 2 != 0);\n}\n\nint cmp(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    int mod_x = x % M;\n    int mod_y = y % M;\n    \n    if (mod_x != mod_y)\n        return mod_x - mod_y;\n    \n    int odd_x = is_odd(x);\n    int odd_y = is_odd(y);\n    \n    if (odd_x != odd_y) {\n        return odd_y - odd_x; // 奇數在前 (odd=1 排在 odd=0 前面)\n    }\n    \n    if (odd_x) {\n        return y - x; // 兩奇數：大者在前 (降冪)\n    } else {\n        return x - y; // 兩偶數：小者在前 (升冪)\n    }\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d %d\", &n, &M) == 2) {\n        printf(\"%d %d\\n\", n, M);\n        if (n == 0 && M == 0) break;\n        int arr[10005];\n        for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n        qsort(arr, n, sizeof(int), cmp);\n        for (int i = 0; i < n; i++) printf(\"%d\\n\", arr[i]);\n    }\n    return 0;\n}\n",
-    "timeLimit": 2.0,
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
     "memoryLimit": "32 MB",
     "timeComplexity": "O(N log N)",
     "spaceComplexity": "O(N)",
+    "description": "衛星記錄了某地區所有樹木的品種名稱。請統計該地區內每種樹木出現的百分比，精確至小數點後 4 位，並依照品種名稱的字典序由小到大排序輸出。測資與測資之間以空行隔開。",
+    "inputFormat": "第一行為測資組數 T。接著有一行空白。每組測資包含多行，每行一個樹種名稱（不超過 30 個字元，每組最多 10000 棵樹），測資以空行或 EOF 結束。",
+    "outputFormat": "對每組測資，輸出樹種名稱與其佔總樹木的百分比 (例如 'Red Alder 50.0000')。測資間印一空行。",
+    "sampleInput": "1\n\nRed Alder\nAsh\nAspen\nBasswood\nAsh\nBeech\nYellow Birch\nAsh\nCherry\nCottonwood\nAsh\nCypress\nRed Alder\nWhite Oak\n",
+    "sampleOutput": "Ash 28.5714\nAspen 7.1429\nBasswood 7.1429\nBeech 7.1429\nCherry 7.1429\nCottonwood 7.1429\nCypress 7.1429\nRed Alder 14.2857\nWhite Oak 7.1429\nYellow Birch 7.1429\n",
+    "hint": "【字串陣列排序與統計】\n在純 C 語言中，將每棵樹存入 char trees[10005][35]。\n用 qsort(trees, count, 35, (int (*)(const void*, const void*))strcmp) 排序。\n排序後線性掃描，統計相同名稱連續出現次數並計算 (次數 * 100.0 / 總數)。",
+    "template": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nchar trees[10005][35];\n\nint main() {\n    // 請讀取樹種並使用 qsort 與 strcmp 排序統計\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nchar trees[10005][35];\n\nint cmp_str(const void *a, const void *b) {\n    return strcmp((const char *)a, (const char *)b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\\n\\n\", &T) != 1) return 0;\n    char line[40];\n    for (int t = 0; t < T; t++) {\n        int count = 0;\n        while (fgets(line, 40, stdin)) {\n            int len = strlen(line);\n            while (len > 0 && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) line[--len] = '\\0';\n            if (len == 0) break;\n            strcpy(trees[count++], line);\n        }\n        qsort(trees, count, 35, cmp_str);\n        if (t > 0) printf(\"\\n\");\n        int i = 0;\n        while (i < count) {\n            int j = i;\n            while (j < count && strcmp(trees[i], trees[j]) == 0) j++;\n            int cur_cnt = j - i;\n            printf(\"%s %.4f\\n\", trees[i], cur_cnt * 100.0 / count);\n            i = j;\n        }\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
-        "input": "15 3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n0 0\n",
-        "expected": "15 3\n15\n9\n3\n6\n12\n13\n7\n1\n4\n10\n11\n5\n2\n8\n14\n0 0\n"
+        "input": "1\n\nRed Alder\nAsh\nAspen\nBasswood\nAsh\nBeech\nYellow Birch\nAsh\nCherry\nCottonwood\nAsh\nCypress\nRed Alder\nWhite Oak\n",
+        "expected": "Ash 28.5714\nAspen 7.1429\nBasswood 7.1429\nBeech 7.1429\nCherry 7.1429\nCottonwood 7.1429\nCypress 7.1429\nRed Alder 14.2857\nWhite Oak 7.1429\nYellow Birch 7.1429\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "6 3\n-3\n-2\n-1\n0\n1\n2\n0 0\n",
-        "expected": "6 3\n-2\n-1\n-3\n0\n1\n2\n0 0\n"
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n\nOak\n",
+        "expected": "Oak 100.0000\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "5 2\n2\n4\n6\n1\n3\n0 0\n",
-        "expected": "5 2\n2\n4\n6\n3\n1\n0 0\n"
+        "name": "規模測試 (Scale Cases)",
+        "input": "1\n\nPine\nPine\nOak\n",
+        "expected": "Oak 33.3333\nPine 66.6667\n"
       }
     ]
   },
   {
-    "id": "10420",
-    "uvaId": "10420",
-    "title": "List of Conquests",
-    "category": "字串處理與字元頻率",
-    "difficulty": "★★☆☆☆",
-    "description": "唐璜在世界各地有許多風流情史。他的隨從把每一位愛慕者的國家與名字記錄了下來。請統計唐璜在每個國家各有多少位愛慕者，並依國家名稱字母順序輸出。",
-    "inputFormat": "第一行有一個整數 n (n <= 2000)。接下來 n 行每行代表一位愛慕者，第一個單詞是國家名稱（不超過 75 字元），隨後是她的名字（同一個國家內可能有多人）。",
-    "outputFormat": "依照國家名稱字典序由小到大，每行輸出國家名稱與該國家的總人數（以空格隔開）。",
-    "sampleInput": "3\nSpain Donna Elvira\nEngland Jane Doe\nSpain Donna Anna\n",
-    "sampleOutput": "England 1\nSpain 2\n",
-    "hint": "【C 語言字串陣列排序 + 統計技巧】\n1. 讀取國家：scanf(\"%s\", country) 只會讀取第一個單詞（國家），後面的名字用 fgets 或 while 讀到換行吃掉即可。\n2. 宣告二維陣列 char countries[2005][80] 存所有國家。\n3. 使用 qsort 與 strcmp 對這 n 個國家進行字典序排序。\n4. 排序後相鄰相同的字串就聚在一起了！用一個計數器由頭走到尾掃描即可，免寫 Hash table！",
-    "template": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar list[2005][80];\n\nint cmp(const void *a, const void *b) {\n    return strcmp((const char *)a, (const char *)b);\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    char rest[105];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", list[i]);\n        fgets(rest, sizeof(rest), stdin); // 吃掉該行後面的人名與換行\n    }\n    // 請在此處排序並線性掃描統計輸出\n    \n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar list[2005][80];\n\nint cmp(const void *a, const void *b) {\n    return strcmp((const char *)a, (const char *)b);\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    char rest[105];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", list[i]);\n        fgets(rest, sizeof(rest), stdin);\n    }\n    qsort(list, n, sizeof(list[0]), cmp);\n    int count = 1;\n    for (int i = 0; i < n; i++) {\n        if (i + 1 < n && strcmp(list[i], list[i + 1]) == 0) {\n            count++;\n        } else {\n            printf(\"%s %d\\n\", list[i], count);\n            count = 1;\n        }\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(N log N · L)",
-    "spaceComplexity": "O(N · L)",
-    "testCases": [
-      {
-        "id": 1,
-        "name": "範例測資 1 (Sample)",
-        "input": "3\nSpain Donna Elvira\nEngland Jane Doe\nSpain Donna Anna\n",
-        "expected": "England 1\nSpain 2\n"
-      },
-      {
-        "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "4\nTaiwan Alice\nTaiwan Bob\nTaiwan Charlie\nTaiwan David\n",
-        "expected": "Taiwan 4\n"
-      },
-      {
-        "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "5\nUSA John\nJapan Ken\nBrazil Ronald\nUSA Mike\nJapan Taro\n",
-        "expected": "Brazil 1\nJapan 2\nUSA 2\n"
-      }
-    ]
-  },
-  {
-    "id": "11461",
-    "uvaId": "11461",
-    "title": "Square Numbers",
+    "id": "10235",
+    "uvaId": "10235",
+    "title": "Simply Emirp",
     "category": "基礎數論與模擬",
     "difficulty": "★☆☆☆☆",
-    "description": "完全平方數是某個整數的平方（例如 1, 4, 9, 16...）。給定區間 [a, b]，計算介於 a 與 b 之間（包含 a 與 b）共有多少個完全平方數。",
-    "inputFormat": "每行包含兩個整數 a 與 b (0 < a <= b <= 100000)。當 a = 0 且 b = 0 時輸入結束。",
-    "outputFormat": "對每組輸入，輸出區間內完全平方數的個數。",
-    "sampleInput": "1 4\n1 10\n0 0\n",
-    "sampleOutput": "2\n3\n",
-    "hint": "【數學開根號或打表法】\n方法 1：利用 math.h 的 sqrt：\n  count = floor(sqrt(b)) - ceil(sqrt(a)) + 1;\n方法 2：直接走訪 i = 1, 2, 3... 當 i*i >= a 且 i*i <= b 時計數器++，超過 b 則 break。",
-    "template": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        // 請在此處計算平方數數量\n    }\n    return 0;\n}\n",
-    "solution": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        int cnt = 0;\n        for (int i = 1; i * i <= b; i++) {\n            if (i * i >= a) cnt++;\n        }\n        printf(\"%d\\n\", cnt);\n    }\n    return 0;\n}\n",
     "timeLimit": 3.0,
     "memoryLimit": "32 MB",
-    "timeComplexity": "O(√B - √A) 或 O(1)",
+    "timeComplexity": "O(sqrt(N))",
     "spaceComplexity": "O(1)",
+    "description": "Emirp 是 Prime（質數）倒過來拼寫的字。若一個正整數 N 是質數，且將其數字左右反轉後得到一個「不等於 N 的另一個質數」，則 N 稱為 Emirp。請判斷給定的數字是 'prime'、'emirp' 還是非質數 ('not prime')。",
+    "inputFormat": "每行包含一個正整數 N (1 < N < 1000000)。讀至 EOF 結束。",
+    "outputFormat": "對每個整數輸出：\n- 'N is emirp.'\n- 'N is prime.'\n- 'N is not prime.'",
+    "sampleInput": "17\n18\n19\n179\n199\n",
+    "sampleOutput": "17 is emirp.\n18 is not prime.\n19 is prime.\n179 is emirp.\n199 is emirp.\n",
+    "hint": "【反轉與質數雙重判定】\n1. 寫一個 is_prime(n) 函數判斷是否為質數。\n2. 若 is_prime(N) == 0，輸出 'not prime'。\n3. 計算反轉數字 rev。\n4. 若 rev != N 且 is_prime(rev) == 1，輸出 'emirp'；否則輸出 'prime'。（注意：迴文質數如 11 反轉仍為 11，不屬於 emirp，只是 prime！）",
+    "template": "#include <stdio.h>\n\nint is_prime(int n) {\n    // 質數判斷\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        // 請判斷是否為 emirp 或 prime\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint is_prime(int n) {\n    if (n < 2) return 0;\n    if (n == 2 || n == 3) return 1;\n    if (n % 2 == 0 || n % 3 == 0) return 0;\n    for (int i = 5; i * i <= n; i += 6) {\n        if (n % i == 0 || n % (i + 2) == 0) return 0;\n    }\n    return 1;\n}\n\nint reverse_num(int n) {\n    int r = 0;\n    while (n > 0) {\n        r = r * 10 + (n % 10);\n        n /= 10;\n    }\n    return r;\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        if (!is_prime(n)) {\n            printf(\"%d is not prime.\\n\", n);\n        } else {\n            int rev = reverse_num(n);\n            if (rev != n && is_prime(rev)) {\n                printf(\"%d is emirp.\\n\", n);\n            } else {\n                printf(\"%d is prime.\\n\", n);\n            }\n        }\n    }\n    return 0;\n}\n",
     "testCases": [
       {
         "id": 1,
         "name": "範例測資 1 (Sample)",
-        "input": "1 4\n1 10\n0 0\n",
-        "expected": "2\n3\n"
+        "input": "17\n18\n19\n179\n199\n",
+        "expected": "17 is emirp.\n18 is not prime.\n19 is prime.\n179 is emirp.\n199 is emirp.\n"
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
-        "input": "4 4\n9 16\n1 1\n0 0\n",
-        "expected": "1\n2\n1\n"
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2\n11\n13\n",
+        "expected": "2 is prime.\n11 is prime.\n13 is emirp.\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
-        "input": "1 100000\n50000 100000\n0 0\n",
-        "expected": "316\n93\n"
+        "name": "規模測試 (Scale Cases)",
+        "input": "101\n997\n",
+        "expected": "101 is prime.\n997 is prime.\n"
+      }
+    ]
+  },
+  {
+    "id": "10242",
+    "uvaId": "10242",
+    "title": "Fourth Point!!",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "給定一個平行四邊形的兩條相鄰邊（由四個點座標表示，其中兩端點必重疊於同一共用頂點）。請計算出該平行四邊形的第四個頂點座標。",
+    "inputFormat": "每行包含 8 個浮點數：x1, y1, x2, y2, x3, y3, x4, y4。前兩點組成第一條邊，後兩點組成第二條邊。讀至 EOF 結束。",
+    "outputFormat": "對每組輸入，輸出第四點的 x 與 y 座標，精準至小數點後 3 位，格式為 'X.XXX Y.YYY'。",
+    "sampleInput": "0.000 0.000 0.000 1.000 0.000 1.000 1.000 1.000\n1.000 0.000 3.500 3.500 3.500 3.500 2.000 0.000\n",
+    "sampleOutput": "1.000 0.000\n-0.500 -3.500\n",
+    "hint": "【向量幾何平移】\n四個端點中恰有兩點完全重疊，設為共用頂點 B。\n另外兩個獨立端點設為 A 和 C。\n平行四邊形第四點 D 滿足向量關係：D = A + C - B（因為 D - A = C - B）。",
+    "template": "#include <stdio.h>\n\nint main() {\n    double x1, y1, x2, y2, x3, y3, x4, y4;\n    while (scanf(\"%lf %lf %lf %lf %lf %lf %lf %lf\", &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4) == 8) {\n        // 請比對重複共用頂點並計算第四點\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    double x1, y1, x2, y2, x3, y3, x4, y4;\n    while (scanf(\"%lf %lf %lf %lf %lf %lf %lf %lf\", &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4) == 8) {\n        double ax, ay, bx, by, cx, cy;\n        // B is common point\n        if (x1 == x3 && y1 == y3) {\n            bx = x1; by = y1; ax = x2; ay = y2; cx = x4; cy = y4;\n        } else if (x1 == x4 && y1 == y4) {\n            bx = x1; by = y1; ax = x2; ay = y2; cx = x3; cy = y3;\n        } else if (x2 == x3 && y2 == y3) {\n            bx = x2; by = y2; ax = x1; ay = y1; cx = x4; cy = y4;\n        } else {\n            bx = x2; by = y2; ax = x1; ay = y1; cx = x3; cy = y3;\n        }\n        double dx = ax + cx - bx;\n        double dy = ay + cy - by;\n        printf(\"%.3f %.3f\\n\", dx, dy);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "0.000 0.000 0.000 1.000 0.000 1.000 1.000 1.000\n1.000 0.000 3.500 3.500 3.500 3.500 2.000 0.000\n",
+        "expected": "1.000 0.000\n-0.500 -3.500\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "0.0 0.0 1.0 1.0 1.0 1.0 2.0 0.0\n",
+        "expected": "1.000 -1.000\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1.0 1.0 2.0 2.0 2.0 2.0 3.0 1.0\n",
+        "expected": "2.000 0.000\n"
       }
     ]
   },
@@ -551,6 +1097,10 @@
     "title": "Common Permutation",
     "category": "字串處理與字元頻率",
     "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(|A| + |B| + 26)",
+    "spaceComplexity": "O(26)",
     "description": "給定兩行只包含小寫英文字母的字串 a 與 b。找出最長的字串 x，使得 x 的字母排列同時是 a 的子序列與 b 的子序列。若有多個字母，依照字母順序輸出。",
     "inputFormat": "每組測資由兩行組成，第一行為字串 a，第二行為字串 b (長度 <= 1000)。讀到 EOF 結束。注意字串可能為空字串！",
     "outputFormat": "對每組測資輸出字串 x，每組一行。若無共同字元則輸出空行。",
@@ -559,10 +1109,6 @@
     "hint": "【雙計數桶取最小值】\n1. 輸入可能包含空行，必須用 gets() 或 fgets()，不能用 scanf(\"%s\")！\n2. 宣告兩個陣列 countA[26], countB[26] 統計兩個字串中小寫字母 'a'-'z' 出現次數。\n3. 從 'a' 跑到 'z'，取 min(countA[i], countB[i])，有幾次就印出幾次該字元。",
     "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char a[1005], b[1005];\n    while (fgets(a, sizeof(a), stdin) != NULL && fgets(b, sizeof(b), stdin) != NULL) {\n        // 請在此處統計共同字元並依序印出\n    }\n    return 0;\n}\n",
     "solution": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char a[1005], b[1005];\n    while (fgets(a, sizeof(a), stdin) != NULL && fgets(b, sizeof(b), stdin) != NULL) {\n        int ca[26] = {0}, cb[26] = {0};\n        for (int i = 0; a[i] != '\\0'; i++) {\n            if (a[i] >= 'a' && a[i] <= 'z') ca[a[i] - 'a']++;\n        }\n        for (int i = 0; b[i] != '\\0'; i++) {\n            if (b[i] >= 'a' && b[i] <= 'z') cb[b[i] - 'a']++;\n        }\n        for (int i = 0; i < 26; i++) {\n            int common = ca[i] < cb[i] ? ca[i] : cb[i];\n            while (common--) {\n                putchar('a' + i);\n            }\n        }\n        putchar('\\n');\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(|A| + |B| + 26)",
-    "spaceComplexity": "O(26)",
     "testCases": [
       {
         "id": 1,
@@ -572,15 +1118,522 @@
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
+        "name": "極端邊界陷阱 (Corner Cases)",
         "input": "abc\nabc\n\nxyz\nhello\nworld\n",
         "expected": "abc\n\nlo\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
+        "name": "規模測試 (Scale Cases)",
         "input": "aaaaa\naaa\nzzzz\nza\n",
         "expected": "aaa\nz\n"
+      }
+    ]
+  },
+  {
+    "id": "10268",
+    "uvaId": "10268",
+    "title": "498-bis",
+    "category": "字串解析與字元頻率",
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "description": "給定一個整數 x，以及多項式 f(x) = a_n * x^n + a_{n-1} * x^{n-1} + ... + a_1 * x + a_0 的各項係數。求一階導數 f'(x) 在 x 處的數值。由於輸入一行內的係數個數未知，需要動態解析整行。",
+    "inputFormat": "每組測資包含兩行：第一行為整數 x；第二行為多項式係數 a_n, a_{n-1}, ... a_0，以空格隔開。讀至 EOF 結束。",
+    "outputFormat": "對每組輸入，輸出一階導數 f'(x) 的值。",
+    "sampleInput": "7\n1 -1\n2\n1 1 1\n",
+    "sampleOutput": "1\n5\n",
+    "hint": "【Horner's Rule 微分計算法】\n若多項式為 a_n * x^n + ... + a_0，其導數為 n*a_n * x^{n-1} + (n-1)*a_{n-1} * x^{n-2} + ... + a_1。\n可以使用類似 Horner's Rule 的方式由高次到低次依序累加：ans = ans * x + i * a[n - i]。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nlong long a[1000005];\n\nint main() {\n    long long x;\n    while (scanf(\"%lld\", &x) == 1) {\n        // 請使用 fgets 讀取係數行並計算一階導數\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nlong long a[1000005];\n\nint main() {\n    long long x;\n    while (scanf(\"%lld\", &x) == 1) {\n        int c;\n        while ((c = getchar()) != '\\n' && c != EOF); // skip newline\n        int n = 0;\n        long long val;\n        char line[1000005];\n        if (!fgets(line, sizeof(line), stdin)) break;\n        char *ptr = line;\n        int offset;\n        while (sscanf(ptr, \"%lld%n\", &val, &offset) == 1) {\n            a[n++] = val;\n            ptr += offset;\n        }\n        long long ans = 0;\n        long long exp = n - 1;\n        for (int i = 0; i < n - 1; i++) {\n            ans = ans * x + a[i] * exp;\n            exp--;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "7\n1 -1\n2\n1 1 1\n",
+        "expected": "1\n5\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "0\n3 2 1\n",
+        "expected": "2\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n1 0 0 0\n",
+        "expected": "12\n"
+      }
+    ]
+  },
+  {
+    "id": "10409",
+    "uvaId": "10409",
+    "title": "Die Game",
+    "category": "二維陣列與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(指令數)",
+    "spaceComplexity": "O(1)",
+    "description": "模擬一顆骰子在平面上的翻滾。初始時，骰子頂面為 1，北面為 2，西面為 3，東面為 4，南面為 5，底面為 6（對立面之和恆為 7）。接受翻滾指令 'north'、'south'、'east'、'west'。求所有指令執行完畢後，頂面朝上的數字是多少。",
+    "inputFormat": "包含多組測資。每組第一行為指令數 n (1 <= n <= 1024)。接下來 n 行每行一個指令字串。當 n = 0 時結束程式。",
+    "outputFormat": "對每組測資輸出最終頂面上的數字。",
+    "sampleInput": "1\nnorth\n3\nnorth\neast\nsouth\n0\n",
+    "sampleOutput": "5\n1\n",
+    "hint": "【骰子翻滾六面置換】\n維護 top=1, north=2, west=3, east=4, south=5, bottom=6。\n翻 north: top = south, south = bottom, bottom = north, north = old_top。\n其餘方向依此類推輪換面值。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n != 0) {\n        // 請模擬骰子狀態翻滾\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n != 0) {\n        int top = 1, north = 2, west = 3, east = 4, south = 5, bottom = 6;\n        char cmd[10];\n        while (n--) {\n            scanf(\"%s\", cmd);\n            int tmp = top;\n            if (cmd[0] == 'n') {\n                top = south; south = bottom; bottom = north; north = tmp;\n            } else if (cmd[0] == 's') {\n                top = north; north = bottom; bottom = south; south = tmp;\n            } else if (cmd[0] == 'w') {\n                top = east; east = bottom; bottom = west; west = tmp;\n            } else if (cmd[0] == 'e') {\n                top = west; west = bottom; bottom = east; east = tmp;\n            }\n        }\n        printf(\"%d\\n\", top);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "1\nnorth\n3\nnorth\neast\nsouth\n0\n",
+        "expected": "5\n1\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "4\nnorth\nsouth\neast\nwest\n0\n",
+        "expected": "1\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\neast\neast\n0\n",
+        "expected": "6\n"
+      }
+    ]
+  },
+  {
+    "id": "10415",
+    "uvaId": "10415",
+    "title": "Eb Alto Saxophone Player",
+    "category": "字串解析與字元頻率",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(音符數)",
+    "spaceComplexity": "O(1)",
+    "description": "薩克斯風演奏者使用 10 根手指（按鍵 1 到 10）彈奏不同的音符（c, d, e, f, g, a, b, C, D, E, F, G, A, B）。每當一個手指從未按下的狀態轉變為按下時，計數器加 1。給定一段音符樂曲，求在演奏過程中，10 根手指各自被按下了多少次。",
+    "inputFormat": "第一行包含測資組數 T。接下來每行包含一首樂曲的字串（可能為空行）。",
+    "outputFormat": "對每組測資，輸出 10 個整數，代表第 1 到第 10 根手指按下的次數，以空格隔開。",
+    "sampleInput": "3\ncdefgab\nBAGFEDC\n\n",
+    "sampleOutput": "0 1 1 1 0 0 1 1 1 1\n1 1 1 1 0 0 1 1 1 0\n0 0 0 0 0 0 0 0 0 0\n",
+    "hint": "【狀態變化統計】\n1. 為 14 種音符各自定義一個長度 10 的布林指法陣列 finger[note][10]。\n2. 維護當前手指狀態 cur[10]（初始全部為 0）。\n3. 走訪每個音符，若 finger[note][k] == 1 且 cur[k] == 0，則 press_count[k]++。\n4. 更新 cur[k] = finger[note][k]。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請維護指法狀態變化\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint finger_map[128][11] = {\n    ['c'] = {0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1},\n    ['d'] = {0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0},\n    ['e'] = {0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0},\n    ['f'] = {0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0},\n    ['g'] = {0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0},\n    ['a'] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},\n    ['b'] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},\n    ['C'] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},\n    ['D'] = {0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0},\n    ['E'] = {0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0},\n    ['F'] = {0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0},\n    ['G'] = {0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},\n    ['A'] = {0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0},\n    ['B'] = {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}\n};\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char line[250];\n    int c;\n    while ((c = getchar()) != '\\n' && c != EOF); // skip newline\n    while (T--) {\n        if (!fgets(line, sizeof(line), stdin)) break;\n        int len = strlen(line);\n        while (len > 0 && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) line[--len] = '\\0';\n        int pressed[11] = {0};\n        int cur[11] = {0};\n        for (int i = 0; i < len; i++) {\n            char note = line[i];\n            for (int k = 1; k <= 10; k++) {\n                int req = finger_map[(int)note][k];\n                if (req == 1 && cur[k] == 0) {\n                    pressed[k]++;\n                }\n                cur[k] = req;\n            }\n        }\n        for (int k = 1; k <= 10; k++) {\n            printf(\"%d%s\", pressed[k], (k == 10) ? \"\" : \" \");\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "3\ncdefgab\nBAGFEDC\n\n",
+        "expected": "0 1 1 1 0 0 1 1 1 1\n1 1 1 1 0 0 1 1 1 0\n0 0 0 0 0 0 0 0 0 0\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\nC\n",
+        "expected": "0 0 1 0 0 0 0 0 0 0\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\nccddeeff\n\n",
+        "expected": "0 1 1 1 0 0 1 1 1 1\n0 0 0 0 0 0 0 0 0 0\n"
+      }
+    ]
+  },
+  {
+    "id": "10420",
+    "uvaId": "10420",
+    "title": "List of Conquests",
+    "category": "字串處理與字元頻率",
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N log N · L)",
+    "spaceComplexity": "O(N · L)",
+    "description": "唐璜在世界各地有許多風流情史。他的隨從把每一位愛慕者的國家與名字記錄了下來。請統計唐璜在每個國家各有多少位愛慕者，並依國家名稱字母順序輸出。",
+    "inputFormat": "第一行有一個整數 n (n <= 2000)。接下來 n 行每行代表一位愛慕者，第一個單詞是國家名稱（不超過 75 字元），隨後是她的名字（同一個國家內可能有多人）。",
+    "outputFormat": "依照國家名稱字典序由小到大，每行輸出國家名稱與該國家的總人數（以空格隔開）。",
+    "sampleInput": "3\nSpain Donna Elvira\nEngland Jane Doe\nSpain Donna Anna\n",
+    "sampleOutput": "England 1\nSpain 2\n",
+    "hint": "【C 語言字串陣列排序 + 統計技巧】\n1. 讀取國家：scanf(\"%s\", country) 只會讀取第一個單詞（國家），後面的名字用 fgets 或 while 讀到換行吃掉即可。\n2. 宣告二維陣列 char countries[2005][80] 存所有國家。\n3. 使用 qsort 與 strcmp 對這 n 個國家進行字典序排序。\n4. 排序後相鄰相同的字串就聚在一起了！用一個計數器由頭走到尾掃描即可，免寫 Hash table！",
+    "template": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar list[2005][80];\n\nint cmp(const void *a, const void *b) {\n    return strcmp((const char *)a, (const char *)b);\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    char rest[105];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", list[i]);\n        fgets(rest, sizeof(rest), stdin); // 吃掉該行後面的人名與換行\n    }\n    // 請在此處排序並線性掃描統計輸出\n    \n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar list[2005][80];\n\nint cmp(const void *a, const void *b) {\n    return strcmp((const char *)a, (const char *)b);\n}\n\nint main() {\n    int n;\n    if (scanf(\"%d\", &n) != 1) return 0;\n    char rest[105];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", list[i]);\n        fgets(rest, sizeof(rest), stdin);\n    }\n    qsort(list, n, sizeof(list[0]), cmp);\n    int count = 1;\n    for (int i = 0; i < n; i++) {\n        if (i + 1 < n && strcmp(list[i], list[i + 1]) == 0) {\n            count++;\n        } else {\n            printf(\"%s %d\\n\", list[i], count);\n            count = 1;\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "3\nSpain Donna Elvira\nEngland Jane Doe\nSpain Donna Anna\n",
+        "expected": "England 1\nSpain 2\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "4\nTaiwan Alice\nTaiwan Bob\nTaiwan Charlie\nTaiwan David\n",
+        "expected": "Taiwan 4\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "5\nUSA John\nJapan Ken\nBrazil Ronald\nUSA Mike\nJapan Taro\n",
+        "expected": "Brazil 1\nJapan 2\nUSA 2\n"
+      }
+    ]
+  },
+  {
+    "id": "10642",
+    "uvaId": "10642",
+    "title": "Can You Solve It?",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "在一個二維網格中，點依照斜對角線的順序被編號：(0,0)=0, (0,1)=1, (1,0)=2, (0,2)=3, (1,1)=4, (2,0)=5... 給定起始點 (x1, y1) 與目標點 (x2, y2)，求從起始點沿著此路徑走到目標點所需移動的步數。",
+    "inputFormat": "第一行包含測資組數 T。接下來每行有四個整數：x1, y1, x2, y2 (x, y < 100000)。",
+    "outputFormat": "對每組測資輸出 'Case C: S'，其中 C 為測資編號（從 1 開始），S 為步數。",
+    "sampleInput": "3\n0 0 0 1\n0 0 1 0\n0 0 0 2\n",
+    "sampleOutput": "Case 1: 1\nCase 2: 2\nCase 3: 3\n",
+    "hint": "【斜線階梯數學編號】\n點 (x, y) 位於第 (x + y) 條斜線上。\n在其之前的斜線點總數為 sum = (x + y) * (x + y + 1) / 2。\n在該斜線上它是第 x 個點，所以索引 index(x, y) = sum + x。\n步數直接就是 index(x2, y2) - index(x1, y1)！",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請使用斜線編號公式計算距離\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nlong long get_index(long long x, long long y) {\n    long long line = x + y;\n    return line * (line + 1) / 2 + x;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    for (int kase = 1; kase <= T; kase++) {\n        long long x1, y1, x2, y2;\n        scanf(\"%lld %lld %lld %lld\", &x1, &y1, &x2, &y2);\n        long long ans = get_index(x2, y2) - get_index(x1, y1);\n        printf(\"Case %d: %lld\\n\", kase, ans);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "3\n0 0 0 1\n0 0 1 0\n0 0 0 2\n",
+        "expected": "Case 1: 1\nCase 2: 2\nCase 3: 3\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n0 0 0 0\n",
+        "expected": "Case 1: 0\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n10 10 20 20\n0 100 100 0\n",
+        "expected": "Case 1: 620\nCase 2: 100\n"
+      }
+    ]
+  },
+  {
+    "id": "10783",
+    "uvaId": "10783",
+    "title": "Odd Sum",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "給定兩個整數 a 與 b (0 <= a <= b <= 100)，計算介於 a 與 b 之間（包含 a 與 b）的所有奇數之總和。",
+    "inputFormat": "第一行包含測資組數 T。接下來每組測資包含兩行，分別為整數 a 與 b。",
+    "outputFormat": "對每組測資輸出 'Case C: S'，其中 C 為組別（從 1 開始），S 為奇數和。",
+    "sampleInput": "2\n1\n5\n3\n5\n",
+    "sampleOutput": "Case 1: 9\nCase 2: 8\n",
+    "hint": "【基礎迴圈或等差級數】\n若 a 為偶數，a++；若 b 為偶數，b--。\n若 a <= b，迴圈 for (int i = a; i <= b; i += 2) sum += i 即可。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請計算區間奇數和\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    for (int kase = 1; kase <= T; kase++) {\n        int a, b;\n        scanf(\"%d %d\", &a, &b);\n        if (a % 2 == 0) a++;\n        if (b % 2 == 0) b--;\n        int sum = 0;\n        for (int i = a; i <= b; i += 2) {\n            sum += i;\n        }\n        printf(\"Case %d: %d\\n\", kase, sum);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n1\n5\n3\n5\n",
+        "expected": "Case 1: 9\nCase 2: 8\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n0\n0\n",
+        "expected": "Case 1: 0\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n0\n100\n99\n99\n",
+        "expected": "Case 1: 2500\nCase 2: 99\n"
+      }
+    ]
+  },
+  {
+    "id": "10812",
+    "uvaId": "10812",
+    "title": "Beat the Spread!",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "美式足球賭盤中，已知兩支球隊最終得分的總和 s 與兩隊得分的差值絕對值 d。求這兩隊可能的得分各是多少（分數必須為非負整數）。",
+    "inputFormat": "第一行包含測資組數 T。接下來每行有兩個非負整數 s 和 d。",
+    "outputFormat": "對每組測資，由大到小輸出兩隊的得分（以空格隔開）。若無解則輸出 'impossible'。",
+    "sampleInput": "2\n40 20\n20 40\n",
+    "sampleOutput": "30 10\nimpossible\n",
+    "hint": "【二元一次聯立方程與無解條件】\n設較大得分為 x，較小得分為 y：\nx + y = s\nx - y = d\n相加得 2x = s + d => x = (s + d) / 2，y = s - x。\n無解情況：\n1. s < d（總和小於差值，不可能）\n2. (s + d) % 2 != 0（無法整除，得分必須為整數）\n符合無解條件直接印 'impossible'，否則印 'x y'。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long s, d;\n        scanf(\"%lld %lld\", &s, &d);\n        // 請在此處判斷是否有解並輸出\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long s, d;\n        scanf(\"%lld %lld\", &s, &d);\n        if (s < d || (s + d) % 2 != 0) {\n            printf(\"impossible\\n\");\n        } else {\n            long long x = (s + d) / 2;\n            long long y = s - x;\n            printf(\"%lld %lld\\n\", x, y);\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n40 20\n20 40\n",
+        "expected": "30 10\nimpossible\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "4\n0 0\n10 10\n5 6\n10 3\n",
+        "expected": "0 0\n10 0\nimpossible\nimpossible\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "3\n10000 2000\n99999 1\n100 99\n",
+        "expected": "6000 4000\n50000 49999\nimpossible\n"
+      }
+    ]
+  },
+  {
+    "id": "10908",
+    "uvaId": "10908",
+    "title": "Largest Squares",
+    "category": "二維陣列與模擬",
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(M * N)",
+    "spaceComplexity": "O(M * N)",
+    "description": "給定一個 M * N 的字元網格，以及 Q 個查詢中心點 (r, c)。求以 (r, c) 為中心，且網格內所有字元皆與中心字元完全相同之最大正方形的邊長（正方形邊長必為奇數：1, 3, 5...）。",
+    "inputFormat": "第一行為測資筆數 T。每組測資第一行包含 M, N, Q (M, N <= 100, Q <= 20)。接下來 M 行每行 N 個字元。接下來 Q 行每行包含一對座標 r 和 c (0 <= r < M, 0 <= c < N)。",
+    "outputFormat": "每組測資先輸出一行 'M N Q'，接著對每個查詢輸出一行最大正方形邊長。",
+    "sampleInput": "1\n7 10 4\nabbbaaaaaa\nabbbaaaaaa\nabbbaaaaaa\naaaaaaaaaa\naaaaaaaaaa\naaccddffff\naaccddffff\n1 2\n2 4\n4 6\n5 2\n",
+    "sampleOutput": "7 10 4\n3\n1\n1\n1\n",
+    "hint": "【中心向外同心擴展】\n從半徑 rad = 1 開始逐步擴展：檢查從 r - rad 到 r + rad、c - rad 到 c + rad 的四個邊界是否都在網格內且字元都等於 grid[r][c]。若全部符合則 rad++，直到失敗為止。最終最大邊長為 (rad - 1) * 2 + 1。",
+    "template": "#include <stdio.h>\n\nchar grid[105][105];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請從中心向外同心擴展檢查最大正方形\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nchar grid[105][105];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int m, n, q;\n        scanf(\"%d %d %d\", &m, &n, &q);\n        for (int i = 0; i < m; i++) {\n            scanf(\"%s\", grid[i]);\n        }\n        printf(\"%d %d %d\\n\", m, n, q);\n        while (q--) {\n            int r, c;\n            scanf(\"%d %d\", &r, &c);\n            char target = grid[r][c];\n            int rad = 1;\n            while (1) {\n                int ok = 1;\n                for (int i = r - rad; i <= r + rad; i++) {\n                    for (int j = c - rad; j <= c + rad; j++) {\n                        if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] != target) {\n                            ok = 0;\n                            break;\n                        }\n                    }\n                    if (!ok) break;\n                }\n                if (ok) rad++;\n                else break;\n            }\n            printf(\"%d\\n\", (rad - 1) * 2 + 1);\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "1\n7 10 4\nabbbaaaaaa\nabbbaaaaaa\nabbbaaaaaa\naaaaaaaaaa\naaaaaaaaaa\naaccddffff\naaccddffff\n1 2\n2 4\n4 6\n5 2\n",
+        "expected": "7 10 4\n3\n1\n1\n1\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n1 1 1\na\n0 0\n",
+        "expected": "1 1 1\n1\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1\n3 3 1\naaa\naaa\naaa\n1 1\n",
+        "expected": "3 3 1\n3\n"
+      }
+    ]
+  },
+  {
+    "id": "10922",
+    "uvaId": "10922",
+    "title": "2 the 9s",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(位數)",
+    "spaceComplexity": "O(位數)",
+    "description": "一個正整數如果能被 9 整除，其各個位數的總和也能被 9 整除。重複此數字和過程直到剩下一個個位數。經過的計算次數稱為該數的 9-degree。若一個數無法被 9 整除，則其 9-degree 為 0。給定長度高達 1000 位的大數，求其是否為 9 的倍數及 9-degree。",
+    "inputFormat": "每行包含一個正整數（最高達 1000 位數）。以輸入 '0' 代表結束。",
+    "outputFormat": "對每組輸入：\n- 若為 9 的倍數：輸出 'N is a multiple of 9 and has 9-degree D.'\n- 否則：輸出 'N is not a multiple of 9.'",
+    "sampleInput": "999999999999999999999\n9\n9999999999999999999999999999998\n0\n",
+    "sampleOutput": "999999999999999999999 is a multiple of 9 and has 9-degree 3.\n9 is a multiple of 9 and has 9-degree 1.\n9999999999999999999999999999998 is not a multiple of 9.\n",
+    "hint": "【大數字元串拆解】\n1. 用字串讀取 N。\n2. 計算字串所有字元之和 sum。\n3. 若 sum % 9 != 0，則輸出 not a multiple of 9。\n4. 若是，則 degree = 1，接著 while(sum > 9) 重複計算各個位數和並 degree++。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[1005];\n    while (scanf(\"%s\", s) == 1 && strcmp(s, \"0\") != 0) {\n        // 請計算 9-degree\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[1005];\n    while (scanf(\"%s\", s) == 1 && strcmp(s, \"0\") != 0) {\n        int sum = 0;\n        int len = strlen(s);\n        for (int i = 0; i < len; i++) {\n            sum += (s[i] - '0');\n        }\n        if (sum % 9 != 0) {\n            printf(\"%s is not a multiple of 9.\\n\", s);\n        } else {\n            int degree = 1;\n            while (sum > 9) {\n                int next_sum = 0;\n                while (sum > 0) {\n                    next_sum += sum % 10;\n                    sum /= 10;\n                }\n                sum = next_sum;\n                degree++;\n            }\n            printf(\"%s is a multiple of 9 and has 9-degree %d.\\n\", s, degree);\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "999999999999999999999\n9\n9999999999999999999999999999998\n0\n",
+        "expected": "999999999999999999999 is a multiple of 9 and has 9-degree 3.\n9 is a multiple of 9 and has 9-degree 1.\n9999999999999999999999999999998 is not a multiple of 9.\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "9\n18\n0\n",
+        "expected": "9 is a multiple of 9 and has 9-degree 1.\n18 is a multiple of 9 and has 9-degree 1.\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "9999\n123456789\n0\n",
+        "expected": "9999 is a multiple of 9 and has 9-degree 2.\n123456789 is a multiple of 9 and has 9-degree 2.\n"
+      }
+    ]
+  },
+  {
+    "id": "10929",
+    "uvaId": "10929",
+    "title": "You can say 11",
+    "category": "大數運算與進制",
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 1.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(|S|) 長度線性掃描",
+    "spaceComplexity": "O(|S|) 字元陣列",
+    "description": "你的任務是判斷給定的一個正整數是否為 11 的倍數。請注意該整數可能長達 1000 位數！",
+    "inputFormat": "每行包含一個正整數 N (最多 1000 位數)。當 N = 0 時代表輸入結束，該行不需處理。",
+    "outputFormat": "若 N 為 11 的倍數，輸出 'N is a multiple of 11.'，否則輸出 'N is not a multiple of 11.'。",
+    "sampleInput": "112233\n30800\n2937\n323455693\n5038297\n112234\n0\n",
+    "sampleOutput": "112233 is a multiple of 11.\n30800 is a multiple of 11.\n2937 is a multiple of 11.\n323455693 is a multiple of 11.\n5038297 is a multiple of 11.\n112234 is not a multiple of 11.\n",
+    "hint": "【大數與同餘定理】\n數字長達 1000 位，不能用 int / long long 存，必須用 char s[1005] 存成字串！\n11 的倍數檢驗法：奇數位數字和與偶數位數字和的差值，若能被 11 整除，則原數能被 11 整除。\n結束條件用 strcmp(s, \"0\") == 0 判定。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[1005];\n    while (scanf(\"%s\", s) == 1 && strcmp(s, \"0\") != 0) {\n        // 計算奇數索引與偶數索引的數字和\n        \n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s[1005];\n    while (scanf(\"%s\", s) == 1 && strcmp(s, \"0\") != 0) {\n        int odd_sum = 0, even_sum = 0;\n        for (int i = 0; s[i] != '\\0'; i++) {\n            if (i % 2 == 0) odd_sum += (s[i] - '0');\n            else            even_sum += (s[i] - '0');\n        }\n        int diff = odd_sum - even_sum;\n        if (diff % 11 == 0)\n            printf(\"%s is a multiple of 11.\\n\", s);\n        else\n            printf(\"%s is not a multiple of 11.\\n\", s);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "112233\n30800\n2937\n323455693\n5038297\n112234\n0\n",
+        "expected": "112233 is a multiple of 11.\n30800 is a multiple of 11.\n2937 is a multiple of 11.\n323455693 is a multiple of 11.\n5038297 is a multiple of 11.\n112234 is not a multiple of 11.\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "11\n22\n121\n1001\n1111\n1234\n0\n",
+        "expected": "11 is a multiple of 11.\n22 is a multiple of 11.\n121 is a multiple of 11.\n1001 is a multiple of 11.\n1111 is a multiple of 11.\n1234 is not a multiple of 11.\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "12345678901234567890\n99999999999999999999\n1000000000000000000000000000001\n0\n",
+        "expected": "12345678901234567890 is not a multiple of 11.\n99999999999999999999 is a multiple of 11.\n1000000000000000000000000000001 is not a multiple of 11.\n"
+      }
+    ]
+  },
+  {
+    "id": "10931",
+    "uvaId": "10931",
+    "title": "Parity",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log N)",
+    "spaceComplexity": "O(log N)",
+    "description": "給定一個正整數 I，求其二進制表示法 B，以及 B 中包含的 1 的總數（稱為 Parity，同位元數）。以格式 'The parity of B is P (mod 2).' 輸出。",
+    "inputFormat": "每行包含一個正整數 I (1 <= I <= 2147483647)。以輸入 '0' 代表結束。",
+    "outputFormat": "對每組輸入輸出 'The parity of B is P (mod 2).'，其中 B 為二進制字串，P 為 1 的個數。",
+    "sampleInput": "1\n2\n10\n21\n0\n",
+    "sampleOutput": "The parity of 1 is 1 (mod 2).\nThe parity of 10 is 1 (mod 2).\nThe parity of 1010 is 2 (mod 2).\nThe parity of 10101 is 3 (mod 2).\n",
+    "hint": "【短除法轉二進制】\n反覆 n % 2 與 n /= 2 存入字元陣列，最後反轉輸出，同時統計 1 的個數。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n != 0) {\n        // 請將 n 轉二進制並統計 1 的個數\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n != 0) {\n        char bin[40];\n        int len = 0;\n        int ones = 0;\n        int tmp = n;\n        while (tmp > 0) {\n            int bit = tmp % 2;\n            if (bit == 1) ones++;\n            bin[len++] = bit + '0';\n            tmp /= 2;\n        }\n        printf(\"The parity of \");\n        for (int i = len - 1; i >= 0; i--) {\n            putchar(bin[i]);\n        }\n        printf(\" is %d (mod 2).\\n\", ones);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "1\n2\n10\n21\n0\n",
+        "expected": "The parity of 1 is 1 (mod 2).\nThe parity of 10 is 1 (mod 2).\nThe parity of 1010 is 2 (mod 2).\nThe parity of 10101 is 3 (mod 2).\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2147483647\n0\n",
+        "expected": "The parity of 1111111111111111111111111111111 is 31 (mod 2).\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "255\n1024\n0\n",
+        "expected": "The parity of 11111111 is 8 (mod 2).\nThe parity of 10000000000 is 1 (mod 2).\n"
+      }
+    ]
+  },
+  {
+    "id": "11005",
+    "uvaId": "11005",
+    "title": "Cheapest Base",
+    "category": "大數運算與進制轉換",
+    "difficulty": "★★☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(Q * 36 * log N)",
+    "spaceComplexity": "O(1)",
+    "description": "在墨水列印中，字元 0~9 與 A~Z 各自消耗不同的成本（墨水量）。給定 36 個字元的印製成本，求將給定十進制數轉換為 2 到 36 的哪種進制時，印製該數的總成本最小。若有多個進制成本相同，依序輸出所有最佳進制。",
+    "inputFormat": "第一行包含測資組數 T。每組測資前 4 行包含 36 個整數，代表字元 0~9, A~Z 的成本。接著一行整數 Q 代表查詢數。接下來 Q 行每行一個非負整數 N (0 <= N <= 2000000000)。每筆測資以空行隔開。",
+    "outputFormat": "對每組測資先輸出 'Case C:'。對每個查詢輸出 'Cheapest base(s) for number N: [進制列表]'。",
+    "sampleInput": "1\n0 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1\n4\n0\n10\n100\n1000\n",
+    "sampleOutput": "Case 1:\nCheapest base(s) for number 0: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\nCheapest base(s) for number 10: 5 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\nCheapest base(s) for number 100: 5 10 20 25\nCheapest base(s) for number 1000: 10\n",
+    "hint": "【進制轉換成本計算】\n對每個進制 B (2 到 36)：\n將 N 反覆對 B 取餘數，累加 cost[remainder]，直到 N=0。\n特判 N=0 時成本為 cost[0]。\n找出最小成本 min_cost，再將所有成本等於 min_cost 的進制印出。",
+    "template": "#include <stdio.h>\n\nint cost[36];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請計算 2~36 進制之印刷成本\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint cost[36];\n\nlong long calc_cost(long long n, int base) {\n    if (n == 0) return cost[0];\n    long long total = 0;\n    while (n > 0) {\n        total += cost[n % base];\n        n /= base;\n    }\n    return total;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    for (int kase = 1; kase <= T; kase++) {\n        for (int i = 0; i < 36; i++) scanf(\"%d\", &cost[i]);\n        int q;\n        scanf(\"%d\", &q);\n        if (kase > 1) printf(\"\\n\");\n        printf(\"Case %d:\\n\", kase);\n        while (q--) {\n            long long num;\n            scanf(\"%lld\", &num);\n            long long base_cost[37];\n            long long min_c = -1;\n            for (int b = 2; b <= 36; b++) {\n                base_cost[b] = calc_cost(num, b);\n                if (min_c == -1 || base_cost[b] < min_c) {\n                    min_c = base_cost[b];\n                }\n            }\n            printf(\"Cheapest base(s) for number %lld:\", num);\n            for (int b = 2; b <= 36; b++) {\n                if (base_cost[b] == min_c) {\n                    printf(\" %d\", b);\n                }\n            }\n            printf(\"\\n\");\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "1\n0 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1\n4\n0\n10\n100\n1000\n",
+        "expected": "Case 1:\nCheapest base(s) for number 0: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\nCheapest base(s) for number 10: 5 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\nCheapest base(s) for number 100: 5 10 20 25\nCheapest base(s) for number 1000: 10\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1 1 1 1 1\n1 1 1 1 1 1\n1\n0\n",
+        "expected": "Case 1:\nCheapest base(s) for number 0: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1\n1 2 3 4 5 6 7 8 9 10\n1 2 3 4 5 6 7 8 9 10\n1 2 3 4 5 6 7 8 9 10\n1 2 3 4 5 6\n1\n123456\n",
+        "expected": "Case 1:\nCheapest base(s) for number 123456: 22\n"
+      }
+    ]
+  },
+  {
+    "id": "11063",
+    "uvaId": "11063",
+    "title": "B2-Sequence",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N^2)",
+    "spaceComplexity": "O(Max_Sum)",
+    "description": "若一個正整數數列 1 <= b1 < b2 < b3 ... 滿足所有兩兩元素之和 b_i + b_j (其中 i <= j) 皆不相同（沒有任何兩個兩數之和重複），則稱此數列為 B2-Sequence。給定數列，判斷其是否為 B2-Sequence。每組輸出後需有一空行。",
+    "inputFormat": "包含多組測資。每組第一行為整數 N (2 <= N <= 100)，第二行包含 N 個整數。讀至 EOF 結束。",
+    "outputFormat": "對每組測資輸出 'Case #C: It is [not] a B2-Sequence.' 並緊跟一個空行。",
+    "sampleInput": "4\n1 2 4 8\n4\n3 7 10 14\n",
+    "sampleOutput": "Case #1: It is a B2-Sequence.\n\nCase #2: It is not a B2-Sequence.\n",
+    "hint": "【雙重和相異性檢查】\n1. 檢查元素是否嚴格遞增且大於等於 1：b[0] >= 1，且 b[i] > b[i-1]。\n2. 開大小 20005 的 bool 陣列 sum_seen。\n3. 雙重迴圈 for i from 0 to N-1, for j from i to N-1：若 sum_seen[b[i] + b[j]] 已為真，則代表有重複和，非 B2-Sequence！\n4. 每組輸出後必須印空行。",
+    "template": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int n;\n    int kase = 1;\n    while (scanf(\"%d\", &n) == 1) {\n        // 請檢查兩兩之和是否全不相同\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <string.h>\n\nint b[105];\nint seen[20005];\n\nint main() {\n    int n;\n    int kase = 1;\n    while (scanf(\"%d\", &n) == 1) {\n        int ok = 1;\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d\", &b[i]);\n            if (b[i] < 1) ok = 0;\n            if (i > 0 && b[i] <= b[i - 1]) ok = 0;\n        }\n        memset(seen, 0, sizeof(seen));\n        if (ok) {\n            for (int i = 0; i < n; i++) {\n                for (int j = i; j < n; j++) {\n                    int s = b[i] + b[j];\n                    if (seen[s]) {\n                        ok = 0;\n                        break;\n                    }\n                    seen[s] = 1;\n                }\n                if (!ok) break;\n            }\n        }\n        if (ok) {\n            printf(\"Case #%d: It is a B2-Sequence.\\n\\n\", kase++);\n        } else {\n            printf(\"Case #%d: It is not a B2-Sequence.\\n\\n\", kase++);\n        }\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "4\n1 2 4 8\n4\n3 7 10 14\n",
+        "expected": "Case #1: It is a B2-Sequence.\n\nCase #2: It is not a B2-Sequence.\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2\n1 1\n",
+        "expected": "Case #1: It is not a B2-Sequence.\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "3\n1 2 5\n",
+        "expected": "Case #1: It is a B2-Sequence.\n"
       }
     ]
   },
@@ -590,6 +1643,10 @@
     "title": "Cola",
     "category": "基礎數論與模擬",
     "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
     "description": "超商舉辦可樂特惠活動：憑 3 個空瓶可以免費換 1 瓶新可樂。如果你一開始買了 N 瓶可樂，並且可以向朋友借空瓶（只要喝完之後能還清借的空瓶即可），請問你最多總共可以喝到幾瓶可樂？",
     "inputFormat": "每行包含一個正整數 N (1 <= N <= 200)。讀至 EOF 結束。",
     "outputFormat": "每組測資輸出一個整數，代表最多能喝到的可樂總數。",
@@ -598,10 +1655,6 @@
     "hint": "【數學規律與借瓶子模擬】\n每 3 個空瓶換 1 瓶可樂，喝完又多 1 個空瓶，相當於每消耗 2 個空瓶就能多喝 1 瓶！\n如果最後剩下 2 個空瓶，你可以跟老闆借 1 個空瓶湊成 3 個換 1 瓶，喝完後將那個空瓶還給老闆。\n結論公式：總可樂數 = N + N / 2！或者用 while 模擬也可。",
     "template": "#include <stdio.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        // 計算最多可喝可樂數量\n    }\n    return 0;\n}\n",
     "solution": "#include <stdio.h>\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1) {\n        printf(\"%d\\n\", n + n / 2);\n    }\n    return 0;\n}\n",
-    "timeLimit": 3.0,
-    "memoryLimit": "32 MB",
-    "timeComplexity": "O(1)",
-    "spaceComplexity": "O(1)",
     "testCases": [
       {
         "id": 1,
@@ -611,15 +1664,249 @@
       },
       {
         "id": 2,
-        "name": "邊界與極值測資 (Corner Cases)",
+        "name": "極端邊界陷阱 (Corner Cases)",
         "input": "1\n2\n3\n4\n",
         "expected": "1\n3\n4\n6\n"
       },
       {
         "id": 3,
-        "name": "綜合規模測資 (Scale Cases)",
+        "name": "規模測試 (Scale Cases)",
         "input": "100\n150\n200\n",
         "expected": "150\n225\n300\n"
+      }
+    ]
+  },
+  {
+    "id": "11321",
+    "uvaId": "11321",
+    "title": "Sort! Sort!! and Sort!!!",
+    "category": "排序與中位數",
+    "difficulty": "★★★☆☆",
+    "timeLimit": 2.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N log N)",
+    "spaceComplexity": "O(N)",
+    "description": "給定 N 個整數與一個整數 M。請依照以下規則將這 N 個整數排序：\n1. 每個數以除以 M 的餘數 (n % M) 由小到大排序。\n2. 若兩數除以 M 的餘數相同：\n   - 若一奇一偶，奇數排在偶數前面。\n   - 若兩數皆為奇數，數值較大的排在前面（降冪）。\n   - 若兩數皆為偶數，數值較小的排在前面（升冪）。",
+    "inputFormat": "每組測資第一行有 N (0 < N <= 10000) 和 M (0 < M <= 10000)。接下來 N 行每行一個整數。當 N = 0 且 M = 0 代表輸入結束。",
+    "outputFormat": "對每組測資，第一行輸出 'N M'，接著輸出排序後的 N 個整數。最後輸入 0 0 也要輸出 '0 0' 結尾！",
+    "sampleInput": "15 3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n0 0\n",
+    "sampleOutput": "15 3\n15\n9\n3\n6\n12\n13\n7\n1\n4\n10\n11\n5\n2\n8\n14\n0 0\n",
+    "hint": "【多條件比較器 + 負數餘數陷阱】\n本題是 qsort 自訂比較器的終極考驗！\n【致命陷阱】：\n1. 奇偶判定：在 C 語言中，負奇數 % 2 等於 -1！所以判斷奇數要用 (x % 2 != 0)，不能用 (x % 2 == 1)！\n2. 餘數可能為負值，C 語言的 -5 % 3 是 -2，題目的餘數規則直接使用 a % M 即可。\n3. 最後輸入 0 0 時，也要輸出 '0 0'！",
+    "template": "#include <stdio.h>\n#include <stdlib.h>\n\nint M;\n\nint cmp(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    // 請在此處實現規則 1, 2-1, 2-2, 2-3 的比較邏輯\n    return 0;\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d %d\", &n, &M) == 2) {\n        printf(\"%d %d\\n\", n, M);\n        if (n == 0 && M == 0) break;\n        int arr[10005];\n        for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n        // 呼叫 qsort 並輸出\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <stdlib.h>\n\nint M;\n\nint is_odd(int x) {\n    return (x % 2 != 0);\n}\n\nint cmp(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    int mod_x = x % M;\n    int mod_y = y % M;\n    \n    if (mod_x != mod_y)\n        return mod_x - mod_y;\n    \n    int odd_x = is_odd(x);\n    int odd_y = is_odd(y);\n    \n    if (odd_x != odd_y) {\n        return odd_y - odd_x; // 奇數在前 (odd=1 排在 odd=0 前面)\n    }\n    \n    if (odd_x) {\n        return y - x; // 兩奇數：大者在前 (降冪)\n    } else {\n        return x - y; // 兩偶數：小者在前 (升冪)\n    }\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d %d\", &n, &M) == 2) {\n        printf(\"%d %d\\n\", n, M);\n        if (n == 0 && M == 0) break;\n        int arr[10005];\n        for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n        qsort(arr, n, sizeof(int), cmp);\n        for (int i = 0; i < n; i++) printf(\"%d\\n\", arr[i]);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "15 3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n0 0\n",
+        "expected": "15 3\n15\n9\n3\n6\n12\n13\n7\n1\n4\n10\n11\n5\n2\n8\n14\n0 0\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "6 3\n-3\n-2\n-1\n0\n1\n2\n0 0\n",
+        "expected": "6 3\n-2\n-1\n-3\n0\n1\n2\n0 0\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "5 2\n2\n4\n6\n1\n3\n0 0\n",
+        "expected": "5 2\n2\n4\n6\n3\n1\n0 0\n"
+      }
+    ]
+  },
+  {
+    "id": "11332",
+    "uvaId": "11332",
+    "title": "Summing Digits",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(log N)",
+    "spaceComplexity": "O(1)",
+    "description": "給定一個正整數 n，將其各個位數相加得到一個新整數。若此整數仍大於等於 10，則繼續對其位數相加，直到得到個位數為止。這個結果稱為 n 的數位根 (Digital Root)。",
+    "inputFormat": "每行包含一個正整數 n (n <= 2*10^9)。當 n = 0 時輸入結束。",
+    "outputFormat": "對每個整數，輸出其最終的個位數結果，每組一行。",
+    "sampleInput": "2\n11\n47\n1234567892\n0\n",
+    "sampleOutput": "2\n2\n2\n2\n",
+    "hint": "【直接雙層 while 迴圈】\n外層迴圈：while (n >= 10)\n內層迴圈：sum = 0; while (n > 0) { sum += n % 10; n /= 10; } n = sum;\n（數學小知識：這題本質就是 n % 9，若餘數為 0 且 n > 0 則為 9，但直接模擬最不容易出錯）。",
+    "template": "#include <stdio.h>\n\nint main() {\n    long long n;\n    while (scanf(\"%lld\", &n) == 1 && n != 0) {\n        // 請在此處計算數位根並輸出\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint main() {\n    long long n;\n    while (scanf(\"%lld\", &n) == 1 && n != 0) {\n        while (n >= 10) {\n            long long sum = 0;\n            while (n > 0) {\n                sum += n % 10;\n                n /= 10;\n            }\n            n = sum;\n        }\n        printf(\"%lld\\n\", n);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\n11\n47\n1234567892\n0\n",
+        "expected": "2\n2\n2\n2\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n9\n18\n999999999\n0\n",
+        "expected": "1\n9\n9\n9\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2000000000\n1999999999\n1000000001\n0\n",
+        "expected": "2\n1\n2\n"
+      }
+    ]
+  },
+  {
+    "id": "11349",
+    "uvaId": "11349",
+    "title": "Symmetric Matrix",
+    "category": "二維陣列與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N^2)",
+    "spaceComplexity": "O(N^2)",
+    "description": "給定一個 N * N 的方陣。判斷其是否為對稱矩陣（Symmetric）。本題定義之對稱矩陣條件為：\n1. 所有矩陣元素皆必須為非負整數（>= 0）。若包含任何負數，直接視為 Non-symmetric！\n2. 矩陣關於中心點對稱，即 A[i][j] == A[N - 1 - i][N - 1 - j] 對所有元素皆成立。",
+    "inputFormat": "第一行為測資組數 T。每組測資包含一行 'N = [整數]' (N <= 100)，接著 N 行每行 N 個長整數。長整數可能小於 0。",
+    "outputFormat": "對每組測資輸出 'Test #C: Symmetric.' 或 'Test #C: Non-symmetric.'。",
+    "sampleInput": "2\nN = 3\n5 1 3\n2 0 2\n3 1 5\nN = 3\n5 1 3\n2 0 2\n0 1 5\n",
+    "sampleOutput": "Test #1: Symmetric.\nTest #2: Non-symmetric.\n",
+    "hint": "【輸入格式與負數極大陷阱】\n1. 輸入格式有 'N = ' 前綴，需使用 scanf(\" N = %d\", &n) 或 getchar 跳過前綴字元。\n2. 原題規範：矩陣元素若為負數，直接判為 Non-symmetric！\n3. 元素可能超過 32-bit int，建議使用 `long long` 存儲。",
+    "template": "#include <stdio.h>\n\nlong long mat[105][105];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請小心處理 N = 輸入格式與負數陷阱\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nlong long mat[105][105];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    for (int kase = 1; kase <= T; kase++) {\n        char dummy;\n        int n;\n        scanf(\" %c %c %d\", &dummy, &dummy, &n);\n        int sym = 1;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                scanf(\"%lld\", &mat[i][j]);\n                if (mat[i][j] < 0) sym = 0;\n            }\n        }\n        if (sym) {\n            for (int i = 0; i < n; i++) {\n                for (int j = 0; j < n; j++) {\n                    if (mat[i][j] != mat[n - 1 - i][n - 1 - j]) {\n                        sym = 0;\n                        break;\n                    }\n                }\n                if (!sym) break;\n            }\n        }\n        if (sym) printf(\"Test #%d: Symmetric.\\n\", kase);\n        else printf(\"Test #%d: Non-symmetric.\\n\", kase);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "2\nN = 3\n5 1 3\n2 0 2\n3 1 5\nN = 3\n5 1 3\n2 0 2\n0 1 5\n",
+        "expected": "Test #1: Symmetric.\nTest #2: Non-symmetric.\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\nN = 2\n-1 0\n0 0\n",
+        "expected": "Test #1: Non-symmetric.\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1\nN = 1\n42\n",
+        "expected": "Test #1: Symmetric.\n"
+      }
+    ]
+  },
+  {
+    "id": "11417",
+    "uvaId": "11417",
+    "title": "GCD",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(N^2 log N)",
+    "spaceComplexity": "O(1)",
+    "description": "給定一個整數 N，計算以下雙重迴圈中兩兩元素的最大公因數總和 G：\nG = sum_{i=1}^{N-1} sum_{j=i+1}^{N} GCD(i, j)。",
+    "inputFormat": "每行包含一個整數 N (1 < N < 501)。輸入以 N = 0 結束。",
+    "outputFormat": "對每組輸入輸出計算出的 G 值。",
+    "sampleInput": "10\n100\n500\n0\n",
+    "sampleOutput": "67\n13015\n442011\n",
+    "hint": "【雙重迴圈與輾轉相除法】\nN <= 500，直接雙重迴圈計算累加 GCD(i, j) 即可在幾十毫秒內完成。",
+    "template": "#include <stdio.h>\n\nint gcd(int a, int b) {\n    return b == 0 ? a : gcd(b, a % b);\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n != 0) {\n        // 請計算兩兩 GCD 之和\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint gcd(int a, int b) {\n    return b == 0 ? a : gcd(b, a % b);\n}\n\nint main() {\n    int n;\n    while (scanf(\"%d\", &n) == 1 && n != 0) {\n        long long G = 0;\n        for (int i = 1; i < n; i++) {\n            for (int j = i + 1; j <= n; j++) {\n                G += gcd(i, j);\n            }\n        }\n        printf(\"%lld\\n\", G);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "10\n100\n500\n0\n",
+        "expected": "67\n13015\n442011\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "2\n0\n",
+        "expected": "1\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "50\n0\n",
+        "expected": "2725\n"
+      }
+    ]
+  },
+  {
+    "id": "11461",
+    "uvaId": "11461",
+    "title": "Square Numbers",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(√B - √A) 或 O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "完全平方數是某個整數的平方（例如 1, 4, 9, 16...）。給定區間 [a, b]，計算介於 a 與 b 之間（包含 a 與 b）共有多少個完全平方數。",
+    "inputFormat": "每行包含兩個整數 a 與 b (0 < a <= b <= 100000)。當 a = 0 且 b = 0 時輸入結束。",
+    "outputFormat": "對每組輸入，輸出區間內完全平方數的個數。",
+    "sampleInput": "1 4\n1 10\n0 0\n",
+    "sampleOutput": "2\n3\n",
+    "hint": "【數學開根號或打表法】\n方法 1：利用 math.h 的 sqrt：\n  count = floor(sqrt(b)) - ceil(sqrt(a)) + 1;\n方法 2：直接走訪 i = 1, 2, 3... 當 i*i >= a 且 i*i <= b 時計數器++，超過 b 則 break。",
+    "template": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        // 請在此處計算平方數數量\n    }\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    int a, b;\n    while (scanf(\"%d %d\", &a, &b) == 2 && (a != 0 || b != 0)) {\n        int cnt = 0;\n        for (int i = 1; i * i <= b; i++) {\n            if (i * i >= a) cnt++;\n        }\n        printf(\"%d\\n\", cnt);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "1 4\n1 10\n0 0\n",
+        "expected": "2\n3\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "4 4\n9 16\n1 1\n0 0\n",
+        "expected": "1\n2\n1\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "1 100000\n50000 100000\n0 0\n",
+        "expected": "316\n93\n"
+      }
+    ]
+  },
+  {
+    "id": "12019",
+    "uvaId": "12019",
+    "title": "Doom's Day Algorithm",
+    "category": "基礎數論與模擬",
+    "difficulty": "★☆☆☆☆",
+    "timeLimit": 3.0,
+    "memoryLimit": "32 MB",
+    "timeComplexity": "O(1)",
+    "spaceComplexity": "O(1)",
+    "description": "2011 年的 4 月 4 日、6 月 6 日、8 月 8 日、10 月 10 日、12 月 12 日都是星期一（稱為末日星期幾 Doom's Day）。給定 2011 年的某個日期（月份 M 與日期 D），求該天是星期幾（Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday）。注意：2011 年不是閏年，2 月有 28 天。",
+    "inputFormat": "第一行包含測資組數 T。接下來每行兩個整數 M 與 D 代表月與日。",
+    "outputFormat": "對每組輸入，輸出該天是星期幾的英文全名。",
+    "sampleInput": "8\n1 6\n2 28\n4 4\n5 9\n7 11\n8 8\n9 5\n12 11\n",
+    "sampleOutput": "Thursday\nMonday\nMonday\nMonday\nMonday\nMonday\nMonday\nSunday\n",
+    "hint": "【天數累加模 7】\n已知 2011 年 1 月 1 日是星期六 (Saturday)。\n建立每個月天數陣列 days[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}。\n計算從 1 月 1 日到 M 月 D 日的累計天數差 diff，星期幾即為 (5 + diff) % 7 查表。",
+    "template": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // 請計算 2011 年指定日期的星期幾\n    return 0;\n}\n",
+    "solution": "#include <stdio.h>\n\nint days_in_month[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};\nchar *week_names[7] = {\n    \"Saturday\", \"Sunday\", \"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\"\n};\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int m, d;\n        scanf(\"%d %d\", &m, &d);\n        int total = 0;\n        for (int i = 1; i < m; i++) {\n            total += days_in_month[i];\n        }\n        total += (d - 1);\n        int weekday = total % 7; // 1月1日為 Saturday (index 0)\n        printf(\"%s\\n\", week_names[weekday]);\n    }\n    return 0;\n}\n",
+    "testCases": [
+      {
+        "id": 1,
+        "name": "範例測資 1 (Sample)",
+        "input": "8\n1 6\n2 28\n4 4\n5 9\n7 11\n8 8\n9 5\n12 11\n",
+        "expected": "Thursday\nMonday\nMonday\nMonday\nMonday\nMonday\nMonday\nSunday\n"
+      },
+      {
+        "id": 2,
+        "name": "極端邊界陷阱 (Corner Cases)",
+        "input": "1\n1 1\n",
+        "expected": "Saturday\n"
+      },
+      {
+        "id": 3,
+        "name": "規模測試 (Scale Cases)",
+        "input": "2\n12 31\n1 10\n",
+        "expected": "Saturday\nMonday\n"
       }
     ]
   }
