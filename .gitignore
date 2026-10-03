@@ -1,0 +1,23 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary judge artifacts & build outputs
+solution_temp.c
+solution_temp.exe
+*.exe
+*.o
+*.obj
+
+# Local practice scratch files (created at runtime by web judge)
+solution.c
+input.txt
+expected.txt
+
+# OS & Editor files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

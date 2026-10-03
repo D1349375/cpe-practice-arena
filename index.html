@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPE C 語言實戰練習平台 + AI 程式導師</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Marked.js (Markdown parser) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+    <!-- KaTeX (LaTeX math formula rendering) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <style>
+        :root {
+            --bg-sidebar: #131314;
+            --bg-main: #18181a;
+            --bg-editor: #1c1c1f;
+            --bg-card: #202024;
+            --border-subtle: #242428;
+            --border-card: #2d2d34;
+            --border-active: #38383f;
+            --text-main: #ececed;
+            --text-muted: #9a9aa2;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang TC", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+        .code-font { font-family: "Fira Code", Consolas, Monaco, "Courier New", monospace; }
+        pre, code { font-family: "Fira Code", Consolas, Monaco, "Courier New", monospace; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #323238; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #45454d; }
+        
+        textarea:focus { outline: none; }
+        
+        /* Markdown rendered styling inside chat bubbles */
+        .markdown-body h1 { font-size: 1.15rem; font-weight: 700; color: #f4f4f5; margin-top: 0.75rem; margin-bottom: 0.4rem; }
+        .markdown-body h2 { font-size: 1.05rem; font-weight: 700; color: #f4f4f5; margin-top: 0.75rem; margin-bottom: 0.35rem; }
+        .markdown-body h3 { font-size: 0.95rem; font-weight: 600; color: #f4f4f5; margin-top: 0.65rem; margin-bottom: 0.3rem; }
+        .markdown-body h4 { font-size: 0.85rem; font-weight: 600; color: #e4e4e7; margin-top: 0.5rem; margin-bottom: 0.25rem; }
+        .markdown-body p { margin-bottom: 0.45rem; line-height: 1.55; }
+        .markdown-body ul, .markdown-body ol { margin-left: 1.25rem; margin-bottom: 0.5rem; }
+        .markdown-body li { list-style-type: disc; margin-bottom: 0.2rem; }
+        .markdown-body blockquote { border-left: 2px solid #3b82f6; padding-left: 0.6rem; color: #a1a1aa; margin: 0.4rem 0; }
+        .markdown-body pre { background-color: #141416; border: 1px solid #2b2b30; border-radius: 0.5rem; padding: 0.6rem; margin: 0.45rem 0; overflow-x: auto; }
+        .markdown-body code { font-family: "Fira Code", monospace; font-size: 11px; }
+        .markdown-body p code { background-color: #27272b; color: #34d399; padding: 0.1rem 0.25rem; border-radius: 0.25rem; }
+        .katex { font-size: 1.05em; color: #93c5fd; }
+
+        /* Resizer styling */
+        .resizer-col {
+            width: 5px;
+            cursor: col-resize;
+            background-color: #1e1e22;
+            border-left: 1px solid #26262a;
+            border-right: 1px solid #26262a;
+            transition: background-color 0.15s ease;
+            position: relative;
+            z-index: 25;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .resizer-col:hover, .resizer-col.resizing {
+            background-color: #3b82f6 !important;
+            border-color: #60a5fa !important;
+        }
+
+        .switch-checkbox:checked + .switch-label {
+            background-color: #3b82f6;
+        }
+        .switch-checkbox:checked + .switch-label .switch-dot {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none" style="background-color: #18181a;">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b px-3.5 py-2 flex items-center justify-between flex-shrink-0 z-30" style="background-color: #131314; border-color: #242428;">
+        <!-- Left: Logo & Sidebar Toggle -->
+        <div class="flex items-center space-x-2.5">
+            <button onclick="toggleSidebarPanel()" class="p-1.5 rounded-lg transition text-xs flex items-center justify-center" 
+                    style="background-color: #1c1c1f; border: 1px solid #2a2a2f; color: #a1a1aa;" title="收合或展開題庫列表">
+                <i id="toggle-sidebar-icon" class="fa-solid fa-bars text-xs"></i>
+            </button>
+
+            <div class="rounded-lg text-xs flex items-center justify-center w-7 h-7 font-mono font-bold shadow-sm" style="background-color: #242428; border: 1px solid #33333a; color: #ececed;">
+                C
+            </div>
+            <div>
+                <h1 class="text-xs font-semibold tracking-wide flex items-center gap-2" style="color: #f0f0f2;">
+                    CPE 必考 49 題 · C 語言實戰練功場
+                    <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-normal flex items-center gap-1" style="background-color: #222226; color: #34d399; border: 1px solid #2e2e34;">
+                        <i class="fa-solid fa-circle-check text-[9px]"></i> GCC 14.2 Active
+                    </span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="flex items-center space-x-2 text-xs">
+            <!-- Template Toggle Switch -->
+            <div class="flex items-center space-x-2 px-2.5 py-1 rounded-lg" style="background-color: #1c1c1f; border: 1px solid #2a2a2f;">
+                <span class="text-[11px] flex items-center gap-1.5" style="color: #9a9aa2;">
+                    <i class="fa-solid fa-code text-[10px]" style="color: #71717a;"></i>
+                    題解模板
+                </span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="template-toggle" class="sr-only switch-checkbox" onchange="toggleTemplateSetting(this)">
+                    <div class="w-7 h-3.5 rounded-full transition-colors switch-label" style="background-color: #383840;">
+                        <div class="w-3 h-3 bg-white rounded-full transition-transform transform switch-dot mt-[1px] ml-[1px]"></div>
+                    </div>
+                </label>
+                <span id="template-status-text" class="text-[10px] font-mono font-semibold" style="color: #3b82f6;">ON</span>
+            </div>
+
+            <!-- Problem Block Collapse Toggle -->
+            <button id="btn-toggle-problem" onclick="toggleProblemPanel()" 
+                    class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition text-[11px]"
+                    style="background-color: #1c1c1f; border: 1px solid #2a2a2f; color: #cfcfd4;"
+                    title="收合或展開題目面板">
+                <i id="toggle-problem-icon" class="fa-solid fa-chevron-left text-[10px]" style="color: #82828c;"></i>
+                <span id="toggle-problem-text">收合題目</span>
+            </button>
+
+            <!-- Agent Tutor Panel Toggle Button -->
+            <button id="btn-toggle-agent" onclick="toggleAgentPanel()" 
+                    class="px-3 py-1 rounded-lg flex items-center gap-1.5 transition text-[11px] font-medium"
+                    style="background-color: #242428; border: 1px solid #38383f; color: #60a5fa;"
+                    title="開關 AI 程式導師分析面板">
+                <i class="fa-solid fa-user-graduate text-xs text-blue-400"></i>
+                <span id="toggle-agent-text">AI 導師 (已開啟)</span>
+            </button>
+
+            <!-- Sync Button -->
+            <button onclick="syncToFile()" 
+                    class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition text-[11px]"
+                    style="background-color: #1c1c1f; border: 1px solid #2a2a2f; color: #cfcfd4;"
+                    title="同步到本地 solution.c">
+                <i class="fa-solid fa-floppy-disk text-[10px]" style="color: #82828c;"></i>
+                <span>同步本地</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <div id="main-container" class="flex flex-1 overflow-hidden relative">
+
+        <!-- Column 1: Collapsible Problem List Sidebar -->
+        <aside id="sidebar-panel" class="border-r flex flex-col flex-shrink-0 z-10" style="width: 230px; min-width: 150px; max-width: 450px; background-color: #131314; border-color: #242428;">
+            <div class="p-2.5 border-b space-y-2 flex-shrink-0" style="border-color: #242428;">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-xs" style="color: #61616a;"></i>
+                    <input type="text" id="search-box" oninput="filterProblems()" placeholder="Search..." 
+                           class="w-full rounded-lg pl-7 pr-2.5 py-1 text-xs placeholder-zinc-500 focus:outline-none"
+                           style="background-color: #1c1c1f; border: 1px solid #2a2a2f; color: #e4e4e7;">
+                </div>
+                <div class="flex gap-1 overflow-x-auto pb-0.5 text-[11px] custom-scrollbar" id="category-chips">
+                    <button onclick="setCategory('全部')" class="cat-chip active px-2 py-0.5 rounded-md font-medium whitespace-nowrap" style="background-color: #2c2c31; color: #ffffff;">全部</button>
+                    <button onclick="setCategory('基礎數論與模擬')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">數論</button>
+                    <button onclick="setCategory('排序與中位數')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">排序</button>
+                    <button onclick="setCategory('字串處理與字元頻率')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">字串</button>
+                    <button onclick="setCategory('二維陣列與狀態模擬')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">網格</button>
+                    <button onclick="setCategory('大數運算與進制')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">大數</button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1" id="problem-list-container">
+                <div class="text-center py-8 text-xs" style="color: #65656d;">正在載入題庫...</div>
+            </div>
+
+            <div class="p-2 border-t text-[11px] flex justify-between items-center flex-shrink-0" style="background-color: #131314; border-color: #242428; color: #82828c;">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold" style="background-color: #2a2a30; color: #a1a1aa;">C</div>
+                    <span id="problem-count-badge" class="font-medium text-[11px]" style="color: #a1a1aa;">16 題已載入</span>
+                </div>
+                <button onclick="toggleSidebarPanel()" class="text-[10px] text-zinc-500 hover:text-zinc-300">收合側欄</button>
+            </div>
+        </aside>
+
+        <!-- Divider 1: Resizer between Sidebar & Problem Panel -->
+        <div id="resizer-sidebar" class="resizer-col flex items-center justify-center" title="拖曳調整側邊欄寬度"></div>
+
+        <!-- Column 2: Collapsible Problem Statement Panel (With Complexity Bounds) -->
+        <main id="problem-panel" class="border-r flex flex-col overflow-hidden flex-shrink-0" style="width: 380px; min-width: 220px; max-width: 650px; background-color: #18181a; border-color: #26262a;">
+            <div class="p-3 border-b flex-shrink-0 flex items-center justify-between" style="background-color: #18181a; border-color: #26262a;">
+                <div>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span id="prob-uva-badge" class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold" style="background-color: #242428; border: 1px solid #33333a; color: #d4d4d8;">UVA 00100</span>
+                        <span id="prob-cat-badge" class="px-2 py-0.5 rounded text-[11px]" style="background-color: #202024; color: #9a9aa2;">基礎數論與模擬</span>
+                        <span id="prob-diff-badge" class="text-amber-400 text-xs font-mono font-medium">★☆☆☆☆</span>
+                    </div>
+                    <h2 id="prob-title" class="text-sm font-bold tracking-tight" style="color: #f4f4f5;">The 3n + 1 problem</h2>
+                </div>
+                <button onclick="toggleProblemPanel()" class="p-1.5 rounded-lg transition" style="color: #71717a;" title="收合題目欄">
+                    <i class="fa-solid fa-angles-left text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Problem Statement -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3 text-xs leading-relaxed select-text" style="color: #d4d4d8;">
+                <!-- Complexity & Resource Limit Card (New!) -->
+                <div class="p-2.5 rounded-xl border grid grid-cols-2 gap-2" style="background-color: #1c1c20; border-color: #2d2d34;">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-regular fa-clock text-[11px] text-sky-400"></i>
+                        <span class="text-zinc-400 text-[11px]">時限:</span>
+                        <span id="prob-time-limit" class="font-mono font-semibold text-[11px] text-zinc-200">3.0 秒</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-microchip text-[11px] text-indigo-400"></i>
+                        <span class="text-zinc-400 text-[11px]">空間:</span>
+                        <span id="prob-memory-limit" class="font-mono font-semibold text-[11px] text-zinc-200">32 MB</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-line text-[11px] text-emerald-400"></i>
+                        <span class="text-zinc-400 text-[11px]">時間複雜度:</span>
+                        <span id="prob-time-complexity" class="font-mono font-semibold text-[11px] text-emerald-300">O(N)</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-cube text-[11px] text-amber-400"></i>
+                        <span class="text-zinc-400 text-[11px]">空間複雜度:</span>
+                        <span id="prob-space-complexity" class="font-mono font-semibold text-[11px] text-amber-300">O(1)</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h3 class="font-bold text-xs mb-1.5 flex items-center gap-1.5" style="color: #f4f4f5;">
+                        <i class="fa-regular fa-file-lines text-xs" style="color: #71717a;"></i> 題目敘述
+                    </h3>
+                    <div id="prob-desc" class="whitespace-pre-line p-3 rounded-xl border text-xs leading-relaxed" style="background-color: #202024; border-color: #2d2d34; color: #d4d4d8;"></div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="p-2.5 rounded-xl border" style="background-color: #202024; border-color: #2d2d34;">
+                        <h4 class="font-semibold mb-1 flex items-center gap-1.5 text-[11px]" style="color: #34d399;">
+                            <i class="fa-solid fa-arrow-down-to-bracket text-[10px]"></i> 輸入格式
+                        </h4>
+                        <p id="prob-input-spec" class="whitespace-pre-line text-[11px]" style="color: #a1a1aa;"></p>
+                    </div>
+                    <div class="p-2.5 rounded-xl border" style="background-color: #202024; border-color: #2d2d34;">
+                        <h4 class="font-semibold mb-1 flex items-center gap-1.5 text-[11px]" style="color: #fbbf24;">
+                            <i class="fa-solid fa-arrow-up-from-bracket text-[10px]"></i> 輸出格式
+                        </h4>
+                        <p id="prob-output-spec" class="whitespace-pre-line text-[11px]" style="color: #a1a1aa;"></p>
+                    </div>
+                </div>
+
+                <!-- Samples -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold text-[11px]" style="color: #a1a1aa;">範例輸入</span>
+                            <button onclick="copySampleInput()" class="text-[10px] hover:underline" style="color: #38bdf8;">複製</button>
+                        </div>
+                        <pre id="prob-sample-input" class="rounded-xl border p-2 code-font text-[11px] overflow-x-auto custom-scrollbar h-20" style="background-color: #1a1a1d; border-color: #2b2b30; color: #34d399;"></pre>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold text-[11px]" style="color: #a1a1aa;">範例輸出</span>
+                        </div>
+                        <pre id="prob-sample-output" class="rounded-xl border p-2 code-font text-[11px] overflow-x-auto custom-scrollbar h-20" style="background-color: #1a1a1d; border-color: #2b2b30; color: #fbbf24;"></pre>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-1">
+                    <details class="group rounded-xl border p-2.5" style="background-color: #202024; border-color: #2d2d34;">
+                        <summary class="cursor-pointer font-semibold flex items-center justify-between text-xs" style="color: #fbbf24;">
+                            <span class="flex items-center gap-1.5"><i class="fa-regular fa-lightbulb text-xs" style="color: #f59e0b;"></i> 題目細節與陷阱提示</span>
+                            <i class="fa-solid fa-chevron-down text-zinc-500 group-open:rotate-180 transition text-xs"></i>
+                        </summary>
+                        <div id="prob-hint" class="mt-2 whitespace-pre-line pl-2 border-l text-[11px] leading-relaxed" style="border-color: #b45309; color: #d4d4d8;"></div>
+                    </details>
+                </div>
+            </div>
+        </main>
+
+        <!-- Divider 2: Resizer between Problem Panel & Center Workspace -->
+        <div id="resizer-problem" class="resizer-col flex items-center justify-center" title="拖曳調整題目面板寬度"></div>
+
+        <!-- Column 3: Center Code Editor & Multi-Case Testing Console -->
+        <section id="editor-section" class="flex-1 flex flex-col overflow-hidden min-w-[280px]" style="background-color: #18181a;">
+            <!-- Editor Toolbar -->
+            <div class="border-b px-3 py-1.5 flex items-center justify-between flex-shrink-0" style="background-color: #151517; border-color: #26262a;">
+                <div class="flex items-center space-x-2 text-xs">
+                    <button id="btn-reopen-sidebar" onclick="toggleSidebarPanel()" class="hidden px-2 py-0.5 rounded text-xs flex items-center gap-1 transition" style="background-color: #222226; border: 1px solid #2f2f36; color: #a1a1aa;" title="展開側邊欄">
+                        <i class="fa-solid fa-bars text-[10px]"></i> 題庫
+                    </button>
+                    <button id="btn-reopen-problem" onclick="toggleProblemPanel()" class="hidden px-2 py-0.5 rounded text-xs flex items-center gap-1 transition" style="background-color: #222226; border: 1px solid #2f2f36; color: #a1a1aa;" title="展開題目">
+                        <i class="fa-regular fa-file-lines text-[10px]"></i> 題目
+                    </button>
+
+                    <span class="font-mono font-semibold flex items-center gap-1.5 text-xs" style="color: #e4e4e7;">
+                        <i class="fa-regular fa-file-code" style="color: #60a5fa;"></i> solution.c
+                    </span>
+                    <span id="current-template-tag" class="text-[10px] font-mono" style="color: #71717a;">(模板模式)</span>
+
+                    <!-- Save / Load User Code Solutions (New!) -->
+                    <button onclick="saveUserSolution()" class="px-2 py-0.5 rounded transition text-[11px] flex items-center gap-1" style="background-color: #1e1e23; border: 1px solid #2d2d35; color: #34d399;" title="儲存我目前的解法快照">
+                        <i class="fa-solid fa-floppy-disk text-[10px]"></i> 儲存解法
+                    </button>
+                    <button onclick="openSavedSolutionsModal()" id="btn-load-saved-code" class="px-2 py-0.5 rounded transition text-[11px] flex items-center gap-1" style="background-color: #1e1e23; border: 1px solid #2d2d35; color: #a1a1aa;" title="查看與叫出儲存的解法">
+                        <i class="fa-solid fa-folder-open text-[10px]"></i> 歷史解法 (<span id="saved-code-count">0</span>)
+                    </button>
+
+                    <button onclick="resetEditorCode()" class="px-1.5 py-0.5 rounded transition text-[11px]" style="color: #71717a;" title="重置為當前模式程式碼">
+                        <i class="fa-solid fa-rotate-left mr-0.5 text-[10px]"></i> 重置
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button id="btn-custom-run" onclick="runCustomInput()" 
+                            class="px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+                            style="background-color: #222226; border: 1px solid #2f2f36; color: #d4d4d8;">
+                        <i class="fa-solid fa-play text-[10px]" style="color: #fbbf24;"></i> 自訂測資
+                    </button>
+                    <button id="btn-judge" onclick="judgeCurrentCode()" 
+                            class="px-3.5 py-1 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition"
+                            style="background-color: #2563eb; color: #ffffff;">
+                        <i class="fa-solid fa-bolt text-yellow-300 text-xs"></i> 綜合評測 (全測資)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Code Editor Area -->
+            <div class="flex-1 relative overflow-hidden flex flex-col" style="background-color: #1c1c1f;">
+                <textarea id="code-editor" spellcheck="false" 
+                          class="w-full flex-1 p-3.5 code-font text-xs leading-6 resize-none custom-scrollbar border-none focus:ring-0 select-text"
+                          style="background-color: #1c1c1f; color: #f4f4f5;"
+                          placeholder="// 請在此撰寫 C 語言程式碼..."></textarea>
+            </div>
+
+            <!-- Multi-Case Testing & Output Console -->
+            <div class="h-60 border-t flex flex-col flex-shrink-0" style="background-color: #151517; border-color: #26262a;">
+                <div class="border-b px-3 py-1 flex items-center justify-between" style="background-color: #131314; border-color: #26262a;">
+                    <div class="flex items-center space-x-3 text-xs">
+                        <button id="tab-btn-verdict" onclick="switchConsoleTab('verdict')" class="py-1 font-semibold flex items-center gap-1.5 border-b-2" style="color: #60a5fa; border-color: #3b82f6;">
+                            <i class="fa-regular fa-square-check text-xs"></i> 評測結果
+                        </button>
+                        <button id="tab-btn-custom" onclick="switchConsoleTab('custom')" class="py-1 font-medium flex items-center gap-1.5 border-b-2 border-transparent transition" style="color: #71717a;">
+                            <i class="fa-regular fa-keyboard text-xs"></i> 自訂測資輸入
+                        </button>
+                    </div>
+
+                    <!-- Multi-case Pills Row -->
+                    <div id="case-pills-row" class="flex items-center space-x-1.5 overflow-x-auto text-[10px]">
+                        <!-- Dynamically filled with Case 1, Case 2 badges -->
+                    </div>
+                </div>
+
+                <div id="tab-verdict" class="flex-1 p-2.5 overflow-y-auto custom-scrollbar text-xs" style="background-color: #18181a;">
+                    <div id="verdict-banner" class="mb-2 p-2.5 rounded-xl border flex items-center justify-between" style="background-color: #202024; border-color: #2d2d34; color: #d4d4d8;">
+                        <div>
+                            <span class="font-bold text-xs" style="color: #f4f4f5;">準備就緒</span>
+                            <p class="text-[11px] mt-0.5" style="color: #8e8e96;">點擊「綜合評測」將自動運行【範例】、【邊界陷阱】與【規模測資】並嚴格檢驗時間限制。</p>
+                        </div>
+                    </div>
+
+                    <!-- Case Selector Tabs (When multiple cases run) -->
+                    <div id="case-detail-tabs" class="flex gap-1 mb-2 hidden">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <!-- Side-by-side Diff comparison -->
+                    <div id="diff-container" class="grid grid-cols-2 gap-2.5 hidden">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-[11px]" style="color: #9a9aa2;">你的輸出 (Your Output):</span>
+                                <span id="case-runtime-pill" class="text-[10px] font-mono text-zinc-400"></span>
+                            </div>
+                            <pre id="console-actual" class="p-2.5 rounded-xl border code-font text-[11px] h-24 overflow-auto custom-scrollbar select-text" style="background-color: #1a1a1d; border-color: #2b2b30; color: #ececed;"></pre>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-[11px] mb-1 block" style="color: #9a9aa2;">預期輸出 (Expected Output):</span>
+                            <pre id="console-expected" class="p-2.5 rounded-xl border code-font text-[11px] h-24 overflow-auto custom-scrollbar select-text" style="background-color: #1a1a1d; border-color: #2b2b30; color: #fbbf24;"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Input of Selected Case -->
+                    <div id="case-input-preview-box" class="mt-2 hidden">
+                        <span class="text-[10px] text-zinc-500 mb-0.5 block">此測資輸入 (Input):</span>
+                        <pre id="case-input-preview" class="p-2 rounded-lg border code-font text-[10px] max-h-16 overflow-auto custom-scrollbar" style="background-color: #141416; border-color: #26262a; color: #86efac;"></pre>
+                    </div>
+
+                    <div id="console-message-box" class="hidden">
+                        <span class="font-semibold text-[11px] mb-1 block text-rose-400">GCC 編譯訊息:</span>
+                        <pre id="console-message" class="p-2.5 rounded-xl border code-font text-[11px] text-rose-300 h-24 overflow-auto custom-scrollbar whitespace-pre-wrap select-text" style="background-color: #201a1a; border-color: #4a2222;"></pre>
+                    </div>
+                </div>
+
+                <div id="tab-custom" class="flex-1 p-2.5 flex flex-col hidden" style="background-color: #18181a;">
+                    <div class="flex justify-between items-center mb-1 text-[11px]">
+                        <span style="color: #9a9aa2;">自訂測試輸入 (stdin)：</span>
+                        <button onclick="fillSampleToCustom()" class="hover:underline" style="color: #60a5fa;">填入範例測資</button>
+                    </div>
+                    <textarea id="custom-input-box" class="w-full flex-1 p-2 rounded-xl border code-font text-xs resize-none custom-scrollbar select-text" 
+                              style="background-color: #1a1a1d; border-color: #2b2b30; color: #f4f4f5;"
+                              placeholder="在此貼上或輸入自訂測資..."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider 3: Resizer between Center Workspace & Agent Panel -->
+        <div id="resizer-agent" class="resizer-col flex items-center justify-center" title="拖曳調整 AI 導師面板寬度"></div>
+
+        <!-- Column 4: AI Mentor & Chat Sessions Panel -->
+        <aside id="agent-panel" class="border-l flex flex-col flex-shrink-0 z-10" style="width: 410px; min-width: 260px; max-width: 700px; background-color: #141416; border-color: #26262a;">
+            <!-- Agent Header -->
+            <div class="p-3 border-b flex items-center justify-between flex-shrink-0" style="background-color: #131314; border-color: #26262a;">
+                <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs" style="background-color: #2563eb; color: #ffffff;">
+                        <i class="fa-solid fa-graduation-cap text-[11px]"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-bold flex items-center gap-1.5" style="color: #f4f4f5;">
+                            CPE 程式思維導師
+                            <span class="text-[9px] px-1.5 py-0.2 rounded font-mono" style="background-color: #202024; color: #60a5fa; border: 1px solid #2e2e36;">agy CLI</span>
+                        </h2>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <button onclick="toggleAgentPanel()" class="text-zinc-500 hover:text-zinc-300 p-1" title="收合導師面板">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Session Management Bar (New!) -->
+            <div class="px-3 py-1.5 border-b flex items-center justify-between text-xs flex-shrink-0" style="background-color: #18181a; border-color: #26262a;">
+                <div class="flex items-center space-x-1.5 truncate">
+                    <span class="text-[10px] text-zinc-500">Session:</span>
+                    <button onclick="openSessionModal()" id="current-session-pill" class="px-2 py-0.5 rounded text-[11px] font-medium truncate max-w-[170px] flex items-center gap-1" style="background-color: #222228; border: 1px solid #33333d; color: #e4e4e7;" title="點擊切換對話 Session">
+                        <span id="session-title-display">預設對話 1</span>
+                        <i class="fa-solid fa-caret-down text-[9px] text-zinc-500"></i>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <button onclick="createNewSession()" class="px-2 py-0.5 rounded text-[11px] text-blue-400 hover:text-blue-300 hover:bg-zinc-800 transition" title="開立新的對話 Session">
+                        <i class="fa-solid fa-plus text-[10px]"></i> 新增
+                    </button>
+                    <button onclick="archiveCurrentSession()" class="px-2 py-0.5 rounded text-[11px] text-amber-400 hover:text-amber-300 hover:bg-zinc-800 transition" title="封存此對話">
+                        <i class="fa-solid fa-box-archive text-[10px]"></i> 封存
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Action Bar -->
+            <div class="p-2 border-b flex items-center justify-between text-xs flex-shrink-0" style="background-color: #161618; border-color: #26262a;">
+                <span class="text-[11px]" style="color: #9a9aa2;">讀取當前程式碼與輸出</span>
+                <button id="btn-mentor-analyze" onclick="triggerMentorAnalysis()" 
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                        style="background-color: #24242b; border: 1px solid #383842; color: #60a5fa;">
+                    <i class="fa-solid fa-chart-line text-[11px]"></i> 深度診斷思維
+                </button>
+            </div>
+
+            <!-- Messages Stream Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3.5 text-xs select-text">
+                <!-- Welcome Card -->
+                <div class="p-3 rounded-xl border leading-relaxed" style="background-color: #1c1c20; border-color: #2b2b32;">
+                    <div class="flex items-center gap-2 mb-1.5 font-bold" style="color: #60a5fa;">
+                        <i class="fa-solid fa-chalkboard-user"></i> CPE 程式導師已就緒
+                    </div>
+                    <p class="text-[11px] mb-2" style="color: #a1a1aa;">
+                        我不只會協助 Debug，更會<strong>剖析你的思考邏輯與出發點</strong>，肯定優勢並指出盲點，帶你順著自己的思路完成實作。
+                    </p>
+                    <div class="text-[11px] space-y-1" style="color: #8e8e96;">
+                        <div>• 點擊上方 <span class="text-blue-400 font-semibold">「深度診斷思維」</span> 立即分析目前程式碼。</div>
+                        <div>• 或在下方對話框直接提問，例如「為什麼我這樣寫會 WA？」</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Interactive Chat Input -->
+            <div class="p-3 border-t flex flex-col flex-shrink-0" style="background-color: #131314; border-color: #26262a;">
+                <!-- Quick Suggestion Chips -->
+                <div class="flex gap-1.5 overflow-x-auto pb-2 text-[10px] custom-scrollbar">
+                    <button onclick="sendQuickPrompt('請分析我目前的思維邏輯，為什麼我會這樣寫？')" class="px-2 py-0.5 rounded-full whitespace-nowrap transition flex items-center gap-1" style="background-color: #1f1f23; border: 1px solid #2e2e36; color: #a1a1aa;">
+                        <i class="fa-solid fa-brain text-[9px]"></i> 分析思維架構
+                    </button>
+                    <button onclick="sendQuickPrompt('幫我檢查目前的程式碼邏輯盲點，哪裡可能導致錯誤？')" class="px-2 py-0.5 rounded-full whitespace-nowrap transition flex items-center gap-1" style="background-color: #1f1f23; border: 1px solid #2e2e36; color: #a1a1aa;">
+                        <i class="fa-solid fa-bug text-[9px]"></i> 診斷程式盲點
+                    </button>
+                    <button onclick="sendQuickPrompt('這題有什麼常考的魔鬼細節或邊界測資需要防範？')" class="px-2 py-0.5 rounded-full whitespace-nowrap transition flex items-center gap-1" style="background-color: #1f1f23; border: 1px solid #2e2e36; color: #a1a1aa;">
+                        <i class="fa-solid fa-shield-halved text-[9px]"></i> 檢查邊界條件
+                    </button>
+                </div>
+
+                <!-- Input Box -->
+                <div class="relative rounded-xl border flex flex-col p-2" style="background-color: #1c1c1f; border-color: #2d2d34;">
+                    <textarea id="chat-input" rows="2" 
+                              class="w-full bg-transparent text-xs resize-none placeholder-zinc-500 focus:outline-none"
+                              style="color: #f4f4f5;"
+                              placeholder="詢問導師... (Enter 發送，Shift+Enter 換行)"></textarea>
+                    
+                    <div class="flex justify-between items-center pt-1.5 border-t mt-1" style="border-color: #26262a;">
+                        <span class="text-[10px]" style="color: #65656d;">由 Antigravity CLI 驅動</span>
+                        <button id="btn-send-chat" onclick="sendChatMessage()" 
+                                class="w-6 h-6 rounded-lg flex items-center justify-center transition"
+                                style="background-color: #2563eb; color: #ffffff;" title="發送訊息">
+                            <i class="fa-solid fa-arrow-up text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Modal 1: Saved Code Solutions Modal -->
+    <div id="saved-solutions-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden">
+        <div class="rounded-2xl border p-4 w-[500px] max-w-[95%] max-h-[80vh] flex flex-col shadow-2xl" style="background-color: #18181a; border-color: #2d2d34;">
+            <div class="flex justify-between items-center pb-2.5 border-b" style="border-color: #26262a;">
+                <h3 class="text-xs font-bold text-zinc-100 flex items-center gap-1.5">
+                    <i class="fa-solid fa-folder-open text-blue-400"></i> 我儲存的解法版本
+                </h3>
+                <button onclick="closeSavedSolutionsModal()" class="text-zinc-500 hover:text-zinc-300 p-1">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div id="saved-solutions-list" class="flex-1 overflow-y-auto custom-scrollbar py-3 space-y-2 text-xs">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="pt-2 border-t flex justify-end" style="border-color: #26262a;">
+                <button onclick="closeSavedSolutionsModal()" class="px-3 py-1 rounded-lg text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Session Management Modal -->
+    <div id="session-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden">
+        <div class="rounded-2xl border p-4 w-[480px] max-w-[95%] max-h-[80vh] flex flex-col shadow-2xl" style="background-color: #18181a; border-color: #2d2d34;">
+            <div class="flex justify-between items-center pb-2.5 border-b" style="border-color: #26262a;">
+                <h3 class="text-xs font-bold text-zinc-100 flex items-center gap-1.5">
+                    <i class="fa-solid fa-comments text-blue-400"></i> 對話 Session 管理
+                </h3>
+                <button onclick="closeSessionModal()" class="text-zinc-500 hover:text-zinc-300 p-1">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="flex gap-2 my-2.5 text-xs">
+                <button onclick="createNewSession(); closeSessionModal();" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> 新增對話 Session
+                </button>
+            </div>
+            <div class="text-[11px] text-zinc-500 font-semibold mb-1">進行中的對話</div>
+            <div id="active-sessions-list" class="overflow-y-auto custom-scrollbar space-y-1.5 mb-3 max-h-40 text-xs"></div>
+            <div class="text-[11px] text-zinc-500 font-semibold mb-1">已封存的對話 (Archived)</div>
+            <div id="archived-sessions-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 max-h-36 text-xs"></div>
+            <div class="pt-2 border-t flex justify-end mt-2" style="border-color: #26262a;">
+                <button onclick="closeSessionModal()" class="px-3 py-1 rounded-lg text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        let allProblems = [];
+        let currentProblem = null;
+        let selectedCategory = "全部";
+        let isSidebarCollapsed = false;
+        let isProblemCollapsed = false;
+        let isAgentOpen = true;
+
+        let latestJudgeResult = null;
+        let selectedCaseIndex = 0;
+
+        // Session System Data Structures
+        let currentSessionId = null;
+        let problemSessions = []; // list of sessions for current problem
+
+        const BLANK_TEMPLATE = 
+`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main() {
+    // 請在此處撰寫解法
+    
+    return 0;
+}
+`;
+
+        let useTemplate = localStorage.getItem("cpe_use_template") !== "false";
+
+        // XSS Sanitization Helper (C2 FIX)
+        function escHtml(s) {
+            if (!s) return "";
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#x27;");
+        }
+
+        // Tab Key Indentation in Code Editor
+        const editor = document.getElementById("code-editor");
+        editor.addEventListener("keydown", function(e) {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+
+        // Real-time Auto-save for current problem
+        let autoSaveTimer = null;
+        editor.addEventListener("input", function() {
+            if (!currentProblem) return;
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                localStorage.setItem("cpe_autosave_" + currentProblem.id, editor.value);
+            }, 600);
+        });
+
+        // Chat Input Enter Key
+        const chatInput = document.getElementById("chat-input");
+        chatInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+
+        // ==========================================
+        // Markdown & KaTeX Math Renderer (Enhanced)
+        // ==========================================
+        function formatMarkdown(text) {
+            if (!text) return "";
+
+            // 1. Render display math $$ ... $$
+            let parsedText = text.replace(/\$\$([\s\S]+?)\$\$/g, function(match, formula) {
+                try {
+                    return katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false });
+                } catch (e) {
+                    return `<div class="katex-error">${formula}</div>`;
+                }
+            });
+
+            // 2. Render inline math $ ... $
+            parsedText = parsedText.replace(/\$([^\$\n]+?)\$/g, function(match, formula) {
+                try {
+                    return katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false });
+                } catch (e) {
+                    return `<span class="katex-error">${formula}</span>`;
+                }
+            });
+
+            // 3. Parse Markdown using Marked.js
+            try {
+                if (window.marked) {
+                    marked.setOptions({ breaks: true, gfm: true });
+                    return `<div class="markdown-body">${marked.parse(parsedText)}</div>`;
+                }
+            } catch (err) {
+                console.error("Marked error:", err);
+            }
+
+            // Fallback
+            return parsedText.replace(/\n/g, "<br>");
+        }
+
+        // ==========================================
+        // Horizontal Drag-to-Resize Setup
+        // ==========================================
+        function initResizers() {
+            const sidebar = document.getElementById("sidebar-panel");
+            const problem = document.getElementById("problem-panel");
+            const agent = document.getElementById("agent-panel");
+
+            const resizerSidebar = document.getElementById("resizer-sidebar");
+            const resizerProblem = document.getElementById("resizer-problem");
+            const resizerAgent = document.getElementById("resizer-agent");
+
+            const savedSidebarWidth = localStorage.getItem("cpe_w_sidebar");
+            const savedProblemWidth = localStorage.getItem("cpe_w_problem");
+            const savedAgentWidth = localStorage.getItem("cpe_w_agent");
+
+            if (savedSidebarWidth) sidebar.style.width = savedSidebarWidth + "px";
+            if (savedProblemWidth) problem.style.width = savedProblemWidth + "px";
+            if (savedAgentWidth) agent.style.width = savedAgentWidth + "px";
+
+            function makeDraggable(resizer, onDrag, onEnd) {
+                let isDragging = false;
+                let startX = 0;
+
+                resizer.addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    resizer.classList.add("resizing");
+                    document.body.style.cursor = "col-resize";
+                    document.body.style.userSelect = "none";
+
+                    function onMouseMove(moveEvent) {
+                        if (!isDragging) return;
+                        const deltaX = moveEvent.clientX - startX;
+                        onDrag(deltaX);
+                    }
+
+                    function onMouseUp() {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        resizer.classList.remove("resizing");
+                        document.body.style.cursor = "";
+                        document.body.style.userSelect = "";
+                        window.removeEventListener("mousemove", onMouseMove);
+                        window.removeEventListener("mouseup", onMouseUp);
+                        if (onEnd) onEnd();
+                    }
+
+                    window.addEventListener("mousemove", onMouseMove);
+                    window.addEventListener("mouseup", onMouseUp);
+                });
+            }
+
+            let startSidebarW = 230;
+            resizerSidebar.addEventListener("mousedown", () => { startSidebarW = sidebar.offsetWidth; });
+            makeDraggable(resizerSidebar, (deltaX) => {
+                sidebar.style.width = Math.max(150, Math.min(450, startSidebarW + deltaX)) + "px";
+            }, () => localStorage.setItem("cpe_w_sidebar", sidebar.offsetWidth));
+
+            let startProblemW = 380;
+            resizerProblem.addEventListener("mousedown", () => { startProblemW = problem.offsetWidth; });
+            makeDraggable(resizerProblem, (deltaX) => {
+                problem.style.width = Math.max(220, Math.min(650, startProblemW + deltaX)) + "px";
+            }, () => localStorage.setItem("cpe_w_problem", problem.offsetWidth));
+
+            let startAgentW = 410;
+            resizerAgent.addEventListener("mousedown", () => { startAgentW = agent.offsetWidth; });
+            makeDraggable(resizerAgent, (deltaX) => {
+                agent.style.width = Math.max(260, Math.min(700, startAgentW - deltaX)) + "px";
+            }, () => localStorage.setItem("cpe_w_agent", agent.offsetWidth));
+        }
+
+        // Toggle Sidebar
+        function toggleSidebarPanel() {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            const sidebar = document.getElementById("sidebar-panel");
+            const resizer = document.getElementById("resizer-sidebar");
+            const icon = document.getElementById("toggle-sidebar-icon");
+            const reopenBtn = document.getElementById("btn-reopen-sidebar");
+
+            if (isSidebarCollapsed) {
+                sidebar.classList.add("hidden");
+                resizer.classList.add("hidden");
+                icon.className = "fa-solid fa-bars-staggered text-xs";
+                reopenBtn.classList.remove("hidden");
+            } else {
+                sidebar.classList.remove("hidden");
+                resizer.classList.remove("hidden");
+                icon.className = "fa-solid fa-bars text-xs";
+                reopenBtn.classList.add("hidden");
+            }
+        }
+
+        // Toggle Problem Panel
+        function toggleProblemPanel() {
+            isProblemCollapsed = !isProblemCollapsed;
+            const probPanel = document.getElementById("problem-panel");
+            const resizer = document.getElementById("resizer-problem");
+            const toggleIcon = document.getElementById("toggle-problem-icon");
+            const toggleText = document.getElementById("toggle-problem-text");
+            const reopenBtn = document.getElementById("btn-reopen-problem");
+
+            if (isProblemCollapsed) {
+                probPanel.classList.add("hidden");
+                resizer.classList.add("hidden");
+                toggleIcon.className = "fa-solid fa-chevron-right text-[10px]";
+                toggleText.innerText = "展開題目";
+                reopenBtn.classList.remove("hidden");
+            } else {
+                probPanel.classList.remove("hidden");
+                resizer.classList.remove("hidden");
+                toggleIcon.className = "fa-solid fa-chevron-left text-[10px]";
+                toggleText.innerText = "收合題目";
+                reopenBtn.classList.add("hidden");
+            }
+        }
+
+        // Toggle Agent Panel
+        function toggleAgentPanel() {
+            isAgentOpen = !isAgentOpen;
+            const agentPanel = document.getElementById("agent-panel");
+            const resizer = document.getElementById("resizer-agent");
+            const btnText = document.getElementById("toggle-agent-text");
+
+            if (isAgentOpen) {
+                agentPanel.classList.remove("hidden");
+                resizer.classList.remove("hidden");
+                btnText.innerText = "AI 導師 (已開啟)";
+            } else {
+                agentPanel.classList.add("hidden");
+                resizer.classList.add("hidden");
+                btnText.innerText = "AI 導師 (已收合)";
+            }
+        }
+
+        // Toggle Template Setting
+        function toggleTemplateSetting(elem) {
+            useTemplate = elem.checked;
+            localStorage.setItem("cpe_use_template", useTemplate ? "true" : "false");
+            updateTemplateSwitchUI();
+
+            if (currentProblem) {
+                if (confirm(`已切換為【${useTemplate ? "使用模板" : "空白模式"}】，是否立即重置當前編輯器內容？`)) {
+                    loadCodeForCurrentProblem();
+                    syncToFileQuiet();
+                }
+            }
+        }
+
+        function updateTemplateSwitchUI() {
+            const toggleElem = document.getElementById("template-toggle");
+            const statusText = document.getElementById("template-status-text");
+            const tag = document.getElementById("current-template-tag");
+
+            toggleElem.checked = useTemplate;
+            if (useTemplate) {
+                statusText.innerText = "ON";
+                statusText.style.color = "#3b82f6";
+                tag.innerText = "(模板模式)";
+            } else {
+                statusText.innerText = "OFF";
+                statusText.style.color = "#71717a";
+                tag.innerText = "(空白模式)";
+            }
+        }
+
+        // ==========================================
+        // Save & Load User Code Solutions (Per Problem)
+        // ==========================================
+        function getSavedSolutions(pid) {
+            try {
+                return JSON.parse(localStorage.getItem("cpe_saved_codes_" + pid) || "[]");
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function updateSavedCodeCountBadge() {
+            if (!currentProblem) return;
+            const list = getSavedSolutions(currentProblem.id);
+            document.getElementById("saved-code-count").innerText = list.length;
+        }
+
+        function saveUserSolution() {
+            if (!currentProblem) return;
+            const code = editor.value.trim();
+            if (!code) {
+                alert("目前編輯器無程式碼，無法儲存！");
+                return;
+            }
+
+            const name = prompt("請輸入此版本名稱（例如：初版迴圈解、優化版本）：", `解法版本 ${new Date().toLocaleTimeString()}`);
+            if (!name) return;
+
+            const list = getSavedSolutions(currentProblem.id);
+            const now = new Date();
+            const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            list.unshift({
+                id: Date.now().toString(),
+                name: name,
+                time: timeStr,
+                code: code
+            });
+
+            localStorage.setItem("cpe_saved_codes_" + currentProblem.id, JSON.stringify(list));
+            updateSavedCodeCountBadge();
+            alert(`已成功儲存解法：【${name}】！`);
+        }
+
+        function openSavedSolutionsModal() {
+            if (!currentProblem) return;
+            const list = getSavedSolutions(currentProblem.id);
+            const container = document.getElementById("saved-solutions-list");
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-zinc-500">此題目尚未儲存過解法版本。點擊「儲存解法」可儲存當前程式碼。</div>`;
+            } else {
+                container.innerHTML = list.map((item, idx) => `
+                    <div class="p-2.5 rounded-xl border flex items-center justify-between" style="background-color: #202024; border-color: #2d2d34;">
+                        <div class="truncate mr-3">
+                            <div class="font-bold text-zinc-200 text-xs truncate">${escHtml(item.name)}</div>
+                            <div class="text-[10px] text-zinc-500 mt-0.5">${item.time} · ${item.code.split('\n').length} 行</div>
+                        </div>
+                        <div class="flex items-center space-x-1.5 shrink-0">
+                            <button onclick="applySavedCode('${item.id}')" class="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-medium">載入</button>
+                            <button onclick="deleteSavedCode('${item.id}')" class="px-2 py-1 rounded bg-zinc-800 hover:bg-rose-900 text-zinc-400 hover:text-white text-[11px]">刪除</button>
+                        </div>
+                    </div>
+                `).join("");
+            }
+
+            document.getElementById("saved-solutions-modal").classList.remove("hidden");
+        }
+
+        function closeSavedSolutionsModal() {
+            document.getElementById("saved-solutions-modal").classList.add("hidden");
+        }
+
+        function applySavedCode(id) {
+            const list = getSavedSolutions(currentProblem.id);
+            const found = list.find(x => x.id === id);
+            if (found) {
+                if (confirm(`確定要載入【${found.name}】嗎？當前編輯器內容將被覆蓋。`)) {
+                    editor.value = found.code;
+                    syncToFileQuiet();
+                    closeSavedSolutionsModal();
+                }
+            }
+        }
+
+        function deleteSavedCode(id) {
+            if (confirm("確定要刪除此儲存版本嗎？")) {
+                let list = getSavedSolutions(currentProblem.id);
+                list = list.filter(x => x.id !== id);
+                localStorage.setItem("cpe_saved_codes_" + currentProblem.id, JSON.stringify(list));
+                updateSavedCodeCountBadge();
+                openSavedSolutionsModal();
+            }
+        }
+
+        // ==========================================
+        // AI Mentor Session Management
+        // ==========================================
+        function loadSessionsForProblem(pid) {
+            try {
+                problemSessions = JSON.parse(localStorage.getItem("cpe_sessions_" + pid) || "[]");
+            } catch (e) {
+                problemSessions = [];
+            }
+
+            if (problemSessions.length === 0) {
+                // Initialize default session
+                const defaultSess = {
+                    id: "sess_" + Date.now(),
+                    title: "思維診斷對話 1",
+                    createdAt: new Date().toLocaleDateString(),
+                    isArchived: false,
+                    messages: []
+                };
+                problemSessions.push(defaultSess);
+                saveSessionsToStorage(pid);
+            }
+
+            // Find first active session
+            const active = problemSessions.find(s => !s.isArchived) || problemSessions[0];
+            currentSessionId = active.id;
+            updateSessionUI();
+        }
+
+        function saveSessionsToStorage(pid) {
+            localStorage.setItem("cpe_sessions_" + (pid || currentProblem.id), JSON.stringify(problemSessions));
+        }
+
+        function getCurrentSession() {
+            return problemSessions.find(s => s.id === currentSessionId);
+        }
+
+        function updateSessionUI() {
+            const sess = getCurrentSession();
+            if (sess) {
+                document.getElementById("session-title-display").innerText = sess.title + (sess.isArchived ? " (已封存)" : "");
+                renderSessionMessages(sess);
+            }
+        }
+
+        function renderSessionMessages(sess) {
+            const container = document.getElementById("chat-messages");
+            container.innerHTML = "";
+
+            // Welcome header
+            const welcomeDiv = document.createElement("div");
+            welcomeDiv.className = "p-3 rounded-xl border leading-relaxed mb-3";
+            welcomeDiv.style.backgroundColor = "#1c1c20";
+            welcomeDiv.style.borderColor = "#2b2b32";
+            welcomeDiv.innerHTML = `
+                <div class="flex items-center gap-2 mb-1.5 font-bold" style="color: #60a5fa;">
+                    <i class="fa-solid fa-chalkboard-user"></i> CPE 程式導師 · ${sess.title}
+                </div>
+                <p class="text-[11px]" style="color: #a1a1aa;">
+                    點擊上方「深度診斷思維」或直接在下方對話框發問。
+                </p>
+            `;
+            container.appendChild(welcomeDiv);
+
+            if (sess.messages && sess.messages.length > 0) {
+                sess.messages.forEach(msg => {
+                    appendMessageDOM(msg.role, msg.content);
+                });
+            }
+        }
+
+        function createNewSession() {
+            if (!currentProblem) return;
+            const title = prompt("請輸入新對話主題（例如：邊界探討、雙指標優化）：", `對話 ${problemSessions.length + 1}`);
+            if (!title) return;
+
+            const newSess = {
+                id: "sess_" + Date.now(),
+                title: title,
+                createdAt: new Date().toLocaleDateString(),
+                isArchived: false,
+                messages: []
+            };
+
+            problemSessions.unshift(newSess);
+            currentSessionId = newSess.id;
+            saveSessionsToStorage();
+            updateSessionUI();
+        }
+
+        function archiveCurrentSession() {
+            const sess = getCurrentSession();
+            if (!sess) return;
+            if (confirm(`確定要封存【${sess.title}】對話嗎？封存後仍可在歷史對話中查閱。`)) {
+                sess.isArchived = true;
+                saveSessionsToStorage();
+                // Switch to another active session or create new
+                const active = problemSessions.find(s => !s.isArchived);
+                if (active) {
+                    currentSessionId = active.id;
+                } else {
+                    createNewSession();
+                }
+                updateSessionUI();
+            }
+        }
+
+        function openSessionModal() {
+            const activeContainer = document.getElementById("active-sessions-list");
+            const archivedContainer = document.getElementById("archived-sessions-list");
+
+            const activeList = problemSessions.filter(s => !s.isArchived);
+            const archivedList = problemSessions.filter(s => s.isArchived);
+
+            activeContainer.innerHTML = activeList.length === 0 ? `<div class="text-zinc-600 text-xs py-2">無進行中對話</div>` :
+                activeList.map(s => `
+                    <div class="p-2 rounded-lg border flex items-center justify-between ${s.id === currentSessionId ? 'border-blue-500 bg-blue-950/20' : 'border-zinc-800 bg-zinc-900/60'}">
+                        <div onclick="switchSession('${s.id}')" class="cursor-pointer truncate mr-2 flex-1">
+                            <span class="font-bold text-zinc-200 text-xs">${escHtml(s.title)}</span>
+                            <span class="text-[10px] text-zinc-500 ml-2">(${s.messages ? s.messages.length : 0} 則對話)</span>
+                        </div>
+                        <div class="flex items-center space-x-1 shrink-0">
+                            <button onclick="archiveSessionById('${s.id}')" class="text-xs text-zinc-400 hover:text-amber-400 p-1" title="封存"><i class="fa-solid fa-box-archive"></i></button>
+                            <button onclick="deleteSessionById('${s.id}')" class="text-xs text-zinc-400 hover:text-rose-400 p-1" title="刪除"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                `).join("");
+
+            archivedContainer.innerHTML = archivedList.length === 0 ? `<div class="text-zinc-600 text-xs py-2">無封存對話</div>` :
+                archivedList.map(s => `
+                    <div class="p-2 rounded-lg border flex items-center justify-between border-zinc-800/60 bg-zinc-900/30">
+                        <div onclick="switchSession('${s.id}')" class="cursor-pointer truncate mr-2 flex-1">
+                            <span class="text-zinc-400 text-xs">${escHtml(s.title)}</span>
+                            <span class="text-[10px] text-zinc-600 ml-2">(${s.messages ? s.messages.length : 0} 則)</span>
+                        </div>
+                        <div class="flex items-center space-x-1 shrink-0">
+                            <button onclick="unarchiveSessionById('${s.id}')" class="text-xs text-zinc-400 hover:text-emerald-400 p-1" title="解封"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                            <button onclick="deleteSessionById('${s.id}')" class="text-xs text-zinc-400 hover:text-rose-400 p-1" title="刪除"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                `).join("");
+
+            document.getElementById("session-modal").classList.remove("hidden");
+        }
+
+        function closeSessionModal() {
+            document.getElementById("session-modal").classList.add("hidden");
+        }
+
+        function switchSession(id) {
+            currentSessionId = id;
+            updateSessionUI();
+            closeSessionModal();
+        }
+
+        function archiveSessionById(id) {
+            const s = problemSessions.find(x => x.id === id);
+            if (s) {
+                s.isArchived = true;
+                saveSessionsToStorage();
+                openSessionModal();
+                updateSessionUI();
+            }
+        }
+
+        function unarchiveSessionById(id) {
+            const s = problemSessions.find(x => x.id === id);
+            if (s) {
+                s.isArchived = false;
+                saveSessionsToStorage();
+                openSessionModal();
+                updateSessionUI();
+            }
+        }
+
+        function deleteSessionById(id) {
+            if (confirm("確定要永久刪除此對話 Session 嗎？")) {
+                problemSessions = problemSessions.filter(x => x.id !== id);
+                if (problemSessions.length === 0) {
+                    problemSessions.push({
+                        id: "sess_" + Date.now(),
+                        title: "思維診斷對話 1",
+                        createdAt: new Date().toLocaleDateString(),
+                        isArchived: false,
+                        messages: []
+                    });
+                }
+                currentSessionId = problemSessions[0].id;
+                saveSessionsToStorage();
+                openSessionModal();
+                updateSessionUI();
+            }
+        }
+
+        function appendMessageDOM(role, content) {
+            const container = document.getElementById("chat-messages");
+            const div = document.createElement("div");
+
+            if (role === "user") {
+                div.className = "flex justify-end";
+                div.innerHTML = `
+                    <div class="px-3 py-2 rounded-2xl max-w-[85%] text-xs leading-relaxed" style="background-color: #2563eb; color: #ffffff;">
+                        ${escHtml(content).replace(/\n/g, '<br>')}
+                    </div>
+                `;
+            } else {
+                div.className = "flex justify-start";
+                div.innerHTML = `
+                    <div class="p-3 rounded-2xl border max-w-[95%] text-xs leading-relaxed select-text" style="background-color: #1c1c20; border-color: #2b2b32; color: #d4d4d8;">
+                        <div class="flex items-center gap-1.5 mb-1.5 font-semibold text-[11px]" style="color: #60a5fa;">
+                            <i class="fa-solid fa-graduation-cap"></i> 程式導師解析
+                        </div>
+                        <div>${formatMarkdown(content)}</div>
+                    </div>
+                `;
+            }
+
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function recordMessageToSession(role, content) {
+            const sess = getCurrentSession();
+            if (sess) {
+                if (!sess.messages) sess.messages = [];
+                sess.messages.push({ role, content, time: Date.now() });
+                saveSessionsToStorage();
+            }
+        }
+
+        // ==========================================
+        // App Lifecycle & Problem Loader
+        // ==========================================
+        function loadCodeForCurrentProblem() {
+            if (!currentProblem) return;
+            // Check if there is auto-saved code
+            const autoCode = localStorage.getItem("cpe_autosave_" + currentProblem.id);
+            if (autoCode && autoCode.trim().length > 0) {
+                editor.value = autoCode;
+                return;
+            }
+
+            if (useTemplate) {
+                editor.value = currentProblem.template || BLANK_TEMPLATE;
+            } else {
+                editor.value = BLANK_TEMPLATE;
+            }
+        }
+
+        function resetEditorCode() {
+            if (!currentProblem) return;
+            const modeName = useTemplate ? "題目專屬模板" : "空白樣板";
+            if (confirm(`確定要將程式碼重置為【${modeName}】嗎？`)) {
+                localStorage.removeItem("cpe_autosave_" + currentProblem.id);
+                if (useTemplate) {
+                    editor.value = currentProblem.template || BLANK_TEMPLATE;
+                } else {
+                    editor.value = BLANK_TEMPLATE;
+                }
+                syncToFileQuiet();
+            }
+        }
+
+        async function init() {
+            updateTemplateSwitchUI();
+            initResizers();
+            try {
+                const res = await fetch("/api/problems");
+                allProblems = await res.json();
+                renderProblemList();
+                if (allProblems.length > 0) {
+                    loadProblem(allProblems[0].id);
+                }
+            } catch (err) {
+                console.error("載入題庫失敗:", err);
+            }
+        }
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll(".cat-chip").forEach(btn => {
+                if (btn.innerText === cat || (cat === "基礎數論與模擬" && btn.innerText.includes("數論"))) {
+                    btn.style.backgroundColor = "#2c2c31";
+                    btn.style.color = "#ffffff";
+                    btn.classList.add("active");
+                } else {
+                    btn.style.backgroundColor = "transparent";
+                    btn.style.color = "#8e8e96";
+                    btn.classList.remove("active");
+                }
+            });
+            renderProblemList();
+        }
+
+        function filterProblems() {
+            renderProblemList();
+        }
+
+        function renderProblemList() {
+            const query = document.getElementById("search-box").value.trim().toLowerCase();
+            const container = document.getElementById("problem-list-container");
+            
+            const filtered = allProblems.filter(p => {
+                const matchCat = (selectedCategory === "全部") || (p.category === selectedCategory);
+                const matchQuery = !query || p.id.includes(query) || p.title.toLowerCase().includes(query) || (p.uvaId && p.uvaId.includes(query));
+                return matchCat && matchQuery;
+            });
+
+            document.getElementById("problem-count-badge").innerText = `${filtered.length} 題`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="p-3 text-center text-xs" style="color: #65656d;">無符合題目</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => {
+                const isActive = currentProblem && currentProblem.id === p.id;
+                if (isActive) {
+                    return `
+                        <div onclick="loadProblem('${p.id}')" 
+                             class="px-2.5 py-1.5 rounded-lg cursor-pointer transition flex items-center justify-between"
+                             style="background-color: #27272b; border: 1px solid #38383f; color: #ffffff;">
+                            <div class="flex items-center gap-2 truncate">
+                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: #60a5fa;"></span>
+                                <span class="text-xs font-medium truncate">${p.title}</span>
+                            </div>
+                            <span class="text-[10px] font-mono shrink-0 ml-1.5" style="color: #9a9aa2;">${p.uvaId || p.id}</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div onclick="loadProblem('${p.id}')" 
+                             class="px-2.5 py-1.5 rounded-lg cursor-pointer transition flex items-center justify-between"
+                             style="background-color: transparent; border: 1px solid transparent; color: #a1a1aa;"
+                             onmouseover="this.style.backgroundColor='#1c1c1f'; this.style.color='#f4f4f5';"
+                             onmouseout="this.style.backgroundColor='transparent'; this.style.color='#a1a1aa';">
+                            <div class="flex items-center gap-2 truncate">
+                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: #3f3f46;"></span>
+                                <span class="text-xs truncate">${p.title}</span>
+                            </div>
+                            <span class="text-[10px] font-mono shrink-0 ml-1.5" style="color: #52525b;">${p.uvaId || p.id}</span>
+                        </div>
+                    `;
+                }
+            }).join("");
+        }
+
+        async function loadProblem(id) {
+            try {
+                const res = await fetch(`/api/problem?id=${id}`);
+                const data = await res.json();
+                currentProblem = data;
+
+                // Problem Specs
+                document.getElementById("prob-uva-badge").innerText = `UVA ${data.uvaId || data.id}`;
+                document.getElementById("prob-cat-badge").innerText = data.category;
+                document.getElementById("prob-diff-badge").innerText = data.difficulty;
+                document.getElementById("prob-title").innerText = data.title;
+                document.getElementById("prob-desc").innerText = data.description;
+                document.getElementById("prob-input-spec").innerText = data.inputFormat;
+                document.getElementById("prob-output-spec").innerText = data.outputFormat;
+                document.getElementById("prob-sample-input").innerText = data.sampleInput;
+                document.getElementById("prob-sample-output").innerText = data.sampleOutput;
+                document.getElementById("prob-hint").innerText = data.hint;
+
+                // Complexity Constraints
+                document.getElementById("prob-time-limit").innerText = (data.timeLimit || 3.0) + " 秒";
+                document.getElementById("prob-memory-limit").innerText = data.memoryLimit || "32 MB";
+                document.getElementById("prob-time-complexity").innerText = data.timeComplexity || "O(N)";
+                document.getElementById("prob-space-complexity").innerText = data.spaceComplexity || "O(1)";
+
+                // Load Code & Saved Solutions
+                loadCodeForCurrentProblem();
+                updateSavedCodeCountBadge();
+
+                // Load Sessions for this problem
+                loadSessionsForProblem(data.id);
+
+                document.getElementById("custom-input-box").value = data.sampleInput;
+                resetVerdictConsole();
+                renderProblemList();
+                syncToFileQuiet();
+            } catch (err) {
+                console.error("載入題目失敗:", err);
+            }
+        }
+
+        function resetVerdictConsole() {
+            latestJudgeResult = null;
+            document.getElementById("verdict-banner").innerHTML = `
+                <div>
+                    <span class="font-bold text-xs" style="color: #f4f4f5;">已載入題目：${currentProblem.title}</span>
+                    <p class="text-[11px] mt-0.5" style="color: #8e8e96;">點擊右上角「綜合評測」將自動測試全部測資（包含邊界與規模測試）。</p>
+                </div>
+            `;
+            document.getElementById("verdict-banner").style.backgroundColor = "#202024";
+            document.getElementById("verdict-banner").style.borderColor = "#2d2d34";
+            document.getElementById("case-pills-row").innerHTML = "";
+            document.getElementById("case-detail-tabs").classList.add("hidden");
+            document.getElementById("diff-container").classList.add("hidden");
+            document.getElementById("case-input-preview-box").classList.add("hidden");
+            document.getElementById("console-message-box").classList.add("hidden");
+        }
+
+        function copySampleInput() {
+            if (!currentProblem) return;
+            navigator.clipboard.writeText(currentProblem.sampleInput)
+                .then(() => alert("已複製範例測資！"))
+                .catch(() => alert("複製失敗，請手動選取複製。"));
+        }
+
+        function switchConsoleTab(tab) {
+            const vTab = document.getElementById("tab-verdict");
+            const cTab = document.getElementById("tab-custom");
+            const vBtn = document.getElementById("tab-btn-verdict");
+            const cBtn = document.getElementById("tab-btn-custom");
+
+            if (tab === "verdict") {
+                vTab.classList.remove("hidden");
+                cTab.classList.add("hidden");
+                vBtn.style.color = "#60a5fa";
+                vBtn.style.borderBottomColor = "#3b82f6";
+                cBtn.style.color = "#71717a";
+                cBtn.style.borderBottomColor = "transparent";
+            } else {
+                vTab.classList.add("hidden");
+                cTab.classList.remove("hidden");
+                cBtn.style.color = "#60a5fa";
+                cBtn.style.borderBottomColor = "#3b82f6";
+                vBtn.style.color = "#71717a";
+                vBtn.style.borderBottomColor = "transparent";
+            }
+        }
+
+        function fillSampleToCustom() {
+            if (!currentProblem) return;
+            document.getElementById("custom-input-box").value = currentProblem.sampleInput;
+        }
+
+        // ==========================================
+        // Multi-Case Judge Execution
+        // ==========================================
+        async function judgeCurrentCode() {
+            if (!currentProblem) return;
+            switchConsoleTab("verdict");
+            const btn = document.getElementById("btn-judge");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> 綜合評測中...`;
+
+            try {
+                const res = await fetch("/api/judge", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: currentProblem.id,
+                        code: editor.value
+                    })
+                });
+                const result = await res.json();
+                latestJudgeResult = result;
+                renderMultiCaseResult(result);
+            } catch (err) {
+                alert("評測通訊失敗: " + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-bolt text-yellow-300 text-xs"></i> 綜合評測 (全測資)`;
+            }
+        }
+
+        async function runCustomInput() {
+            if (!currentProblem) return;
+            const customIn = document.getElementById("custom-input-box").value;
+            switchConsoleTab("verdict");
+            const btn = document.getElementById("btn-custom-run");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> 執行中...`;
+
+            try {
+                const res = await fetch("/api/judge", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: currentProblem.id,
+                        code: editor.value,
+                        customInput: customIn
+                    })
+                });
+                const result = await res.json();
+                renderCustomRunResult(result);
+            } catch (err) {
+                alert("執行失敗: " + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-play text-amber-500 text-[10px]"></i> 自訂測資`;
+            }
+        }
+
+        function renderMultiCaseResult(res) {
+            const banner = document.getElementById("verdict-banner");
+            const pillsRow = document.getElementById("case-pills-row");
+            const detailTabs = document.getElementById("case-detail-tabs");
+            const diffBox = document.getElementById("diff-container");
+            const inputBox = document.getElementById("case-input-preview-box");
+            const msgBox = document.getElementById("console-message-box");
+            const msgPre = document.getElementById("console-message");
+
+            pillsRow.innerHTML = "";
+            detailTabs.innerHTML = "";
+            diffBox.classList.add("hidden");
+            inputBox.classList.add("hidden");
+            msgBox.classList.add("hidden");
+
+            if (res.verdict === "CE") {
+                banner.style.backgroundColor = "#27221b";
+                banner.style.borderColor = "#4a3c1f";
+                banner.innerHTML = `
+                    <div>
+                        <span class="font-bold text-xs flex items-center gap-1.5" style="color: #fbbf24;">
+                            <i class="fa-solid fa-circle-exclamation"></i> Compilation Error (編譯失敗)
+                        </span>
+                        <p class="text-[11px] mt-0.5" style="color: #fcd34d;">GCC 編譯未通過，請查看下方報錯修正語法。</p>
+                    </div>
+                `;
+                msgBox.classList.remove("hidden");
+                msgPre.innerText = res.message;
+                return;
+            }
+
+            // Fill Pills in Console Top Header
+            const cases = res.cases || [];
+            pillsRow.innerHTML = cases.map((c, idx) => {
+                const color = c.verdict === "AC" ? "text-emerald-400 bg-emerald-950/60 border-emerald-700" :
+                              c.verdict === "WA" ? "text-rose-400 bg-rose-950/60 border-rose-700" :
+                              "text-purple-400 bg-purple-950/60 border-purple-700";
+                return `<span class="px-2 py-0.5 rounded border font-mono ${color}">C${idx + 1}:${c.verdict}</span>`;
+            }).join("");
+
+            // Render Banner
+            if (res.verdict === "AC") {
+                banner.style.backgroundColor = "#1b2720";
+                banner.style.borderColor = "#1f4a33";
+                banner.innerHTML = `
+                    <div>
+                        <span class="font-bold text-xs flex items-center gap-1.5" style="color: #34d399;">
+                            <i class="fa-solid fa-check"></i> Accepted (${res.passedCases}/${res.totalCases} 測資全數通過)
+                        </span>
+                        <p class="text-[11px] mt-0.5" style="color: #86efac;">包含範例、極端邊界與規模測試均在限時 (${res.timeLimit}s) 內通過！最大耗時: ${res.timeMs}ms</p>
+                    </div>
+                `;
+            } else if (res.verdict === "WA") {
+                banner.style.backgroundColor = "#271d1d";
+                banner.style.borderColor = "#4c2525";
+                banner.innerHTML = `
+                    <div>
+                        <span class="font-bold text-xs flex items-center gap-1.5" style="color: #f87171;">
+                            <i class="fa-solid fa-xmark"></i> Wrong Answer (${res.passedCases}/${res.totalCases} 通過)
+                        </span>
+                        <p class="text-[11px] mt-0.5" style="color: #fca5a5;">部分測資輸出不符，請點擊下方測資分頁查看錯誤案例與輸入。</p>
+                    </div>
+                `;
+            } else if (res.verdict === "TLE") {
+                banner.style.backgroundColor = "#231b27";
+                banner.style.borderColor = "#3f1f4a";
+                banner.innerHTML = `
+                    <div>
+                        <span class="font-bold text-xs flex items-center gap-1.5" style="color: #c084fc;">
+                            <i class="fa-regular fa-clock"></i> Time Limit Exceeded (執行逾時 > ${res.timeLimit}s)
+                        </span>
+                        <p class="text-[11px] mt-0.5" style="color: #e9d5ff;">演算法耗時超過規定之 ${res.timeLimit} 秒限制，請檢查是否有無窮迴圈或需優化時間複雜度！</p>
+                    </div>
+                `;
+            }
+
+            // Case Tabs (Allow inspecting each test case)
+            if (cases.length > 0) {
+                detailTabs.classList.remove("hidden");
+                detailTabs.innerHTML = cases.map((c, idx) => {
+                    const isPassed = c.verdict === "AC";
+                    const isSelected = idx === 0;
+                    return `
+                        <button onclick="selectCaseDetail(${idx})" id="case-tab-btn-${idx}" 
+                                class="px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition ${isSelected ? 'bg-zinc-800 text-white border-zinc-600' : 'bg-zinc-900/50 text-zinc-400 border-zinc-850 hover:bg-zinc-850'}">
+                            <span class="${isPassed ? 'text-emerald-400' : 'text-rose-400'}">${isPassed ? '✓' : '✗'}</span>
+                            <span>${c.name}</span>
+                        </button>
+                    `;
+                }).join("");
+
+                selectCaseDetail(0);
+            }
+        }
+
+        function selectCaseDetail(idx) {
+            if (!latestJudgeResult || !latestJudgeResult.cases || !latestJudgeResult.cases[idx]) return;
+            selectedCaseIndex = idx;
+            const c = latestJudgeResult.cases[idx];
+
+            document.querySelectorAll("[id^='case-tab-btn-']").forEach((btn, i) => {
+                if (i === idx) {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition bg-zinc-800 text-white border-zinc-600";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition bg-zinc-900/50 text-zinc-400 border-zinc-850 hover:bg-zinc-850";
+                }
+            });
+
+            document.getElementById("diff-container").classList.remove("hidden");
+            document.getElementById("case-input-preview-box").classList.remove("hidden");
+
+            document.getElementById("console-actual").innerText = c.actualOutput || "(無輸出)";
+            document.getElementById("console-expected").innerText = c.expectedOutput || "(無預期輸出)";
+            document.getElementById("case-input-preview").innerText = c.input || "(無輸入)";
+            document.getElementById("case-runtime-pill").innerText = `耗時: ${c.timeMs}ms · 結果: ${c.verdict}`;
+        }
+
+        function renderCustomRunResult(res) {
+            const banner = document.getElementById("verdict-banner");
+            const diffBox = document.getElementById("diff-container");
+            const pillsRow = document.getElementById("case-pills-row");
+            const detailTabs = document.getElementById("case-detail-tabs");
+            const inputBox = document.getElementById("case-input-preview-box");
+
+            pillsRow.innerHTML = "";
+            detailTabs.classList.add("hidden");
+            inputBox.classList.add("hidden");
+
+            banner.style.backgroundColor = "#202024";
+            banner.style.borderColor = "#2d2d34";
+            banner.innerHTML = `
+                <div>
+                    <span class="font-bold text-xs flex items-center gap-1.5" style="color: #60a5fa;">
+                        <i class="fa-solid fa-check"></i> 自訂測資執行完成
+                    </span>
+                    <p class="text-[11px] mt-0.5" style="color: #9a9aa2;">耗時: ${res.timeMs} ms</p>
+                </div>
+            `;
+            diffBox.classList.remove("hidden");
+            document.getElementById("console-actual").innerText = res.actualOutput || "(無輸出)";
+            document.getElementById("console-expected").innerText = "(自訂測資無標準預期輸出)";
+            document.getElementById("case-runtime-pill").innerText = `${res.timeMs}ms`;
+        }
+
+        // ==========================================
+        // AI Mentor Trigger & Chat
+        // ==========================================
+        async function triggerMentorAnalysis() {
+            if (!currentProblem) return;
+            if (!isAgentOpen) toggleAgentPanel();
+
+            const btn = document.getElementById("btn-mentor-analyze");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[11px]"></i> 導師思考中...`;
+
+            const userPromptText = "請幫我分析這份程式碼的思維邏輯、優點與改進方向！";
+            appendMessageDOM("user", userPromptText);
+            recordMessageToSession("user", userPromptText);
+
+            const loadingDiv = document.createElement("div");
+            loadingDiv.id = "agent-loading-bubble";
+            loadingDiv.className = "flex justify-start";
+            loadingDiv.innerHTML = `
+                <div class="p-3 rounded-2xl border text-xs" style="background-color: #1c1c20; border-color: #2b2b32; color: #a1a1aa;">
+                    <i class="fa-solid fa-circle-notch text-blue-400 fa-spin mr-1.5"></i> 導師正在調用 Antigravity CLI 拆解思維架構...
+                </div>
+            `;
+            document.getElementById("chat-messages").appendChild(loadingDiv);
+            document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+
+            const verdictStr = latestJudgeResult ? latestJudgeResult.verdict : "未評測";
+            const actualOutStr = latestJudgeResult ? (latestJudgeResult.actualOutput || "") : "";
+
+            try {
+                const res = await fetch("/api/agent/analyze", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        problemId: currentProblem.id,
+                        code: editor.value,
+                        verdict: verdictStr,
+                        actualOutput: actualOutStr,
+                        expectedOutput: currentProblem.sampleOutput,
+                        message: ""
+                    })
+                });
+                const data = await res.json();
+                document.getElementById("agent-loading-bubble")?.remove();
+                appendMessageDOM("assistant", data.reply);
+                recordMessageToSession("assistant", data.reply);
+            } catch (err) {
+                document.getElementById("agent-loading-bubble")?.remove();
+                appendMessageDOM("assistant", `通訊失敗：${err}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-chart-line text-[11px]"></i> 深度診斷思維`;
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById("chat-input");
+            const text = input.value.trim();
+            if (!text || !currentProblem) return;
+
+            input.value = "";
+            appendMessageDOM("user", text);
+            recordMessageToSession("user", text);
+
+            const loadingDiv = document.createElement("div");
+            loadingDiv.id = "agent-loading-bubble";
+            loadingDiv.className = "flex justify-start";
+            loadingDiv.innerHTML = `
+                <div class="p-2.5 rounded-2xl border text-xs" style="background-color: #1c1c20; border-color: #2b2b32; color: #a1a1aa;">
+                    <i class="fa-solid fa-comment-dots text-blue-400 mr-1.5"></i> 導師思考中...
+                </div>
+            `;
+            document.getElementById("chat-messages").appendChild(loadingDiv);
+            document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+
+            const sess = getCurrentSession();
+            const historyToSend = sess ? (sess.messages || []) : [];
+
+            try {
+                const res = await fetch("/api/agent/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        problemId: currentProblem.id,
+                        code: editor.value,
+                        verdict: latestJudgeResult ? latestJudgeResult.verdict : "",
+                        message: text,
+                        history: historyToSend
+                    })
+                });
+                const data = await res.json();
+                document.getElementById("agent-loading-bubble")?.remove();
+                appendMessageDOM("assistant", data.reply);
+                recordMessageToSession("assistant", data.reply);
+            } catch (err) {
+                document.getElementById("agent-loading-bubble")?.remove();
+                appendMessageDOM("assistant", `提問失敗：${err}`);
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            document.getElementById("chat-input").value = promptText;
+            sendChatMessage();
+        }
+
+        async function syncToFile() {
+            if (!currentProblem) return;
+            try {
+                await fetch("/api/sync", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        code: editor.value,
+                        input: currentProblem.sampleInput,
+                        expected: currentProblem.sampleOutput
+                    })
+                });
+                alert("已成功同步程式碼到本地: \nDesktop/CPE_Practice/solution.c\n以及 input.txt！");
+            } catch (err) {
+                alert("同步失敗: " + err);
+            }
+        }
+
+        async function syncToFileQuiet() {
+            if (!currentProblem) return;
+            try {
+                await fetch("/api/sync", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        code: editor.value,
+                        input: currentProblem.sampleInput,
+                        expected: currentProblem.sampleOutput
+                    })
+                });
+            } catch (err) {
+                // quiet
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", init);
+    </script>
+</body>
+</html>
