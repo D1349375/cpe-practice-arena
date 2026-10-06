@@ -173,6 +173,8 @@
                 </div>
                 <div class="flex gap-1 overflow-x-auto pb-0.5 text-[11px] custom-scrollbar" id="category-chips">
                     <button onclick="setCategory('全部')" class="cat-chip active px-2 py-0.5 rounded-md font-medium whitespace-nowrap" style="background-color: #2c2c31; color: #ffffff;">全部</button>
+                    <button onclick="setCategory('AC')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap font-medium flex items-center gap-1" style="background-color: transparent; color: #34d399;" title="篩選已全部 AC 的題目"><span class="w-1.5 h-1.5 rounded-full" style="background-color: #34d399;"></span>AC</button>
+                    <button onclick="setCategory('PA')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap font-medium flex items-center gap-1" style="background-color: transparent; color: #fbbf24;" title="篩選部分通過 PA 的題目"><span class="w-1.5 h-1.5 rounded-full" style="background-color: #fbbf24;"></span>PA</button>
                     <button onclick="setCategory('基礎數論與模擬')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">數論</button>
                     <button onclick="setCategory('排序與中位數')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">排序</button>
                     <button onclick="setCategory('字串處理與字元頻率')" class="cat-chip px-2 py-0.5 rounded-md whitespace-nowrap" style="background-color: transparent; color: #8e8e96;">字串</button>
@@ -188,7 +190,7 @@
             <div class="p-2 border-t text-[11px] flex justify-between items-center flex-shrink-0" style="background-color: #131314; border-color: #242428; color: #82828c;">
                 <div class="flex items-center gap-1.5">
                     <div class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold" style="background-color: #2a2a30; color: #a1a1aa;">C</div>
-                    <span id="problem-count-badge" class="font-medium text-[11px]" style="color: #a1a1aa;">16 題已載入</span>
+                    <div id="problem-count-badge" class="font-medium text-[11px] flex items-center gap-1.5" style="color: #a1a1aa;">載入中...</div>
                 </div>
                 <button onclick="toggleSidebarPanel()" class="text-[10px] text-zinc-500 hover:text-zinc-300">收合側欄</button>
             </div>
@@ -201,10 +203,11 @@
         <main id="problem-panel" class="border-r flex flex-col overflow-hidden flex-shrink-0" style="width: 380px; min-width: 220px; max-width: 650px; background-color: #18181a; border-color: #26262a;">
             <div class="p-3 border-b flex-shrink-0 flex items-center justify-between" style="background-color: #18181a; border-color: #26262a;">
                 <div>
-                    <div class="flex items-center gap-1.5 mb-1">
+                    <div class="flex items-center gap-1.5 mb-1 flex-wrap">
                         <span id="prob-uva-badge" class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold" style="background-color: #242428; border: 1px solid #33333a; color: #d4d4d8;">UVA 00100</span>
                         <span id="prob-cat-badge" class="px-2 py-0.5 rounded text-[11px]" style="background-color: #202024; color: #9a9aa2;">基礎數論與模擬</span>
                         <span id="prob-diff-badge" class="text-amber-400 text-xs font-mono font-medium">★☆☆☆☆</span>
+                        <span id="prob-status-badge" class="hidden px-2 py-0.5 rounded text-[11px] font-mono font-bold flex items-center gap-1"></span>
                     </div>
                     <h2 id="prob-title" class="text-sm font-bold tracking-tight" style="color: #f4f4f5;">The 3n + 1 problem</h2>
                 </div>
@@ -846,6 +849,67 @@ int main() {
         }
 
         // ==========================================
+        // Problem Solved Status System (AC & PA)
+        // ==========================================
+        function getProblemStatusMap() {
+            try {
+                return JSON.parse(localStorage.getItem("cpe_problem_status_map") || "{}");
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function getProblemStatus(pid) {
+            const map = getProblemStatusMap();
+            return map[pid] || null;
+        }
+
+        function setProblemStatus(pid, verdict, passed, total) {
+            const map = getProblemStatusMap();
+            const prev = map[pid];
+            // 若曾全部通過 (AC)，則永久保留最高成就 AC 記號
+            let finalVerdict = verdict;
+            if (prev && prev.verdict === "AC" && verdict !== "AC") {
+                finalVerdict = "AC";
+            }
+            map[pid] = {
+                verdict: finalVerdict,
+                passed: passed,
+                total: total,
+                updatedAt: Date.now()
+            };
+            localStorage.setItem("cpe_problem_status_map", JSON.stringify(map));
+        }
+
+        function updateProblemHeaderStatusBadge() {
+            if (!currentProblem) return;
+            const badge = document.getElementById("prob-status-badge");
+            if (!badge) return;
+            const st = getProblemStatus(currentProblem.id);
+            if (!st) {
+                badge.classList.add("hidden");
+                return;
+            }
+            badge.classList.remove("hidden");
+            if (st.verdict === "AC") {
+                badge.style.backgroundColor = "rgba(34, 197, 94, 0.15)";
+                badge.style.color = "#34d399";
+                badge.style.border = "1px solid rgba(34, 197, 94, 0.35)";
+                badge.innerHTML = `<i class="fa-solid fa-circle-check text-[10px]"></i> AC (全部通過)`;
+            } else if (st.verdict === "PA") {
+                badge.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
+                badge.style.color = "#fbbf24";
+                badge.style.border = "1px solid rgba(245, 158, 11, 0.35)";
+                badge.innerHTML = `<i class="fa-solid fa-circle-half-stroke text-[10px]"></i> PA (部分通過 ${st.passed}/${st.total})`;
+            } else {
+                badge.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+                badge.style.color = "#f87171";
+                badge.style.border = "1px solid rgba(239, 68, 68, 0.35)";
+                badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-[10px]"></i> ${st.verdict} (未全過)`;
+            }
+        }
+
+        // ==========================================
         // Save & Load User Code Solutions (Per Problem)
         // ==========================================
         function getSavedSolutions(pid) {
@@ -1221,13 +1285,22 @@ int main() {
         function setCategory(cat) {
             selectedCategory = cat;
             document.querySelectorAll(".cat-chip").forEach(btn => {
-                if (btn.innerText === cat || (cat === "基礎數論與模擬" && btn.innerText.includes("數論"))) {
+                const text = btn.innerText.trim();
+                const isMatch = (text === cat) || 
+                                (cat === "基礎數論與模擬" && text.includes("數論")) ||
+                                (cat === "排序與中位數" && text.includes("排序")) ||
+                                (cat === "字串處理與字元頻率" && text.includes("字串")) ||
+                                (cat === "二維陣列與狀態模擬" && text.includes("網格")) ||
+                                (cat === "大數運算與進制" && text.includes("大數")) ||
+                                (cat === "AC" && text === "AC") ||
+                                (cat === "PA" && text === "PA");
+                if (isMatch) {
                     btn.style.backgroundColor = "#2c2c31";
                     btn.style.color = "#ffffff";
                     btn.classList.add("active");
                 } else {
                     btn.style.backgroundColor = "transparent";
-                    btn.style.color = "#8e8e96";
+                    btn.style.color = text.includes("AC") ? "#34d399" : text.includes("PA") ? "#fbbf24" : "#8e8e96";
                     btn.classList.remove("active");
                 }
             });
@@ -1241,14 +1314,40 @@ int main() {
         function renderProblemList() {
             const query = document.getElementById("search-box").value.trim().toLowerCase();
             const container = document.getElementById("problem-list-container");
-            
+            const statusMap = getProblemStatusMap();
+
+            // 統計總 AC 與 PA 數量
+            let totalAC = 0;
+            let totalPA = 0;
+            allProblems.forEach(p => {
+                const st = statusMap[p.id];
+                if (st) {
+                    if (st.verdict === "AC") totalAC++;
+                    else if (st.verdict === "PA") totalPA++;
+                }
+            });
+
             const filtered = allProblems.filter(p => {
-                const matchCat = (selectedCategory === "全部") || (p.category === selectedCategory);
+                const st = statusMap[p.id];
+                const matchCat = (selectedCategory === "全部") ||
+                                 (selectedCategory === "AC" && st && st.verdict === "AC") ||
+                                 (selectedCategory === "PA" && st && st.verdict === "PA") ||
+                                 (p.category === selectedCategory);
                 const matchQuery = !query || p.id.includes(query) || p.title.toLowerCase().includes(query) || (p.uvaId && p.uvaId.includes(query));
                 return matchCat && matchQuery;
             });
 
-            document.getElementById("problem-count-badge").innerText = `${filtered.length} 題`;
+            const badgeContainer = document.getElementById("problem-count-badge");
+            if (badgeContainer) {
+                badgeContainer.innerHTML = `
+                    <span style="color: #a1a1aa;">${filtered.length} 題</span>
+                    <span class="flex items-center gap-1 font-mono text-[10px] ml-1.5" title="全部已解出: ${totalAC} 題 AC / 部分通過: ${totalPA} 題 PA">
+                        <span class="text-emerald-400 font-bold flex items-center gap-0.5"><i class="fa-solid fa-check text-[8px]"></i>${totalAC}</span>
+                        <span class="text-zinc-600">/</span>
+                        <span class="text-amber-400 font-bold flex items-center gap-0.5"><i class="fa-solid fa-minus text-[8px]"></i>${totalPA}</span>
+                    </span>
+                `;
+            }
 
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="p-3 text-center text-xs" style="color: #65656d;">無符合題目</div>`;
@@ -1257,33 +1356,54 @@ int main() {
 
             container.innerHTML = filtered.map(p => {
                 const isActive = currentProblem && currentProblem.id === p.id;
-                if (isActive) {
-                    return `
-                        <div onclick="loadProblem('${p.id}')" 
-                             class="px-2.5 py-1.5 rounded-lg cursor-pointer transition flex items-center justify-between"
-                             style="background-color: #27272b; border: 1px solid #38383f; color: #ffffff;">
-                            <div class="flex items-center gap-2 truncate">
-                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: #60a5fa;"></span>
-                                <span class="text-xs font-medium truncate">${p.title}</span>
-                            </div>
-                            <span class="text-[10px] font-mono shrink-0 ml-1.5" style="color: #9a9aa2;">${p.uvaId || p.id}</span>
-                        </div>
+                const st = statusMap[p.id];
+
+                // 記號狀態判定 (AC / PA)
+                let statusBadgeHtml = "";
+                let dotColor = isActive ? "#60a5fa" : "#3f3f46";
+                let dotGlow = "";
+
+                if (st && st.verdict === "AC") {
+                    dotColor = "#22c55e";
+                    dotGlow = "box-shadow: 0 0 6px rgba(34, 197, 94, 0.45);";
+                    statusBadgeHtml = `
+                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold shrink-0 flex items-center gap-0.5" 
+                              style="background-color: rgba(34, 197, 94, 0.15); color: #34d399; border: 1px solid rgba(34, 197, 94, 0.35);" 
+                              title="全測資通過 (AC)">
+                            <i class="fa-solid fa-check text-[8px]"></i>AC
+                        </span>
                     `;
-                } else {
-                    return `
-                        <div onclick="loadProblem('${p.id}')" 
-                             class="px-2.5 py-1.5 rounded-lg cursor-pointer transition flex items-center justify-between"
-                             style="background-color: transparent; border: 1px solid transparent; color: #a1a1aa;"
-                             onmouseover="this.style.backgroundColor='#1c1c1f'; this.style.color='#f4f4f5';"
-                             onmouseout="this.style.backgroundColor='transparent'; this.style.color='#a1a1aa';">
-                            <div class="flex items-center gap-2 truncate">
-                                <span class="w-1.5 h-1.5 rounded-full" style="background-color: #3f3f46;"></span>
-                                <span class="text-xs truncate">${p.title}</span>
-                            </div>
-                            <span class="text-[10px] font-mono shrink-0 ml-1.5" style="color: #52525b;">${p.uvaId || p.id}</span>
-                        </div>
+                } else if (st && st.verdict === "PA") {
+                    dotColor = "#f59e0b";
+                    dotGlow = "box-shadow: 0 0 6px rgba(245, 158, 11, 0.45);";
+                    statusBadgeHtml = `
+                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold shrink-0 flex items-center gap-0.5" 
+                              style="background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);" 
+                              title="部分測資通過 (PA ${st.passed}/${st.total})">
+                            <i class="fa-solid fa-circle-half-stroke text-[8px]"></i>PA
+                        </span>
                     `;
                 }
+
+                const bgStyle = isActive 
+                    ? "background-color: #27272b; border: 1px solid #38383f; color: #ffffff;" 
+                    : "background-color: transparent; border: 1px solid transparent; color: #a1a1aa;";
+                const hoverEvents = isActive ? "" : `onmouseover="this.style.backgroundColor='#1c1c1f'; this.style.color='#f4f4f5';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#a1a1aa';"`;
+
+                return `
+                    <div onclick="loadProblem('${p.id}')" 
+                         class="px-2.5 py-1.5 rounded-lg cursor-pointer transition flex items-center justify-between gap-1.5"
+                         style="${bgStyle}" ${hoverEvents}>
+                        <div class="flex items-center gap-2 truncate flex-1 min-w-0">
+                            <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: ${dotColor}; ${dotGlow}"></span>
+                            <span class="text-xs truncate ${isActive ? 'font-medium' : ''}">${p.title}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            ${statusBadgeHtml}
+                            <span class="text-[10px] font-mono" style="color: ${isActive ? '#9a9aa2' : '#52525b'};">${p.uvaId || p.id}</span>
+                        </div>
+                    </div>
+                `;
             }).join("");
         }
 
@@ -1320,6 +1440,7 @@ int main() {
 
                 document.getElementById("custom-input-box").value = data.sampleInput;
                 resetVerdictConsole();
+                updateProblemHeaderStatusBadge();
                 renderProblemList();
                 syncToFileQuiet();
             } catch (err) {
@@ -1401,6 +1522,19 @@ int main() {
                 const result = await res.json();
                 latestJudgeResult = result;
                 renderMultiCaseResult(result);
+
+                // 更新題目評測狀態記號 (AC / PA / WA)
+                let verdictType = "WA";
+                if (result.verdict === "AC" || (result.passedCases === result.totalCases && result.totalCases > 0)) {
+                    verdictType = "AC";
+                } else if (result.passedCases > 0 && result.passedCases < result.totalCases) {
+                    verdictType = "PA";
+                } else {
+                    verdictType = result.verdict || "WA";
+                }
+                setProblemStatus(currentProblem.id, verdictType, result.passedCases || 0, result.totalCases || 0);
+                renderProblemList();
+                updateProblemHeaderStatusBadge();
             } catch (err) {
                 alert("評測通訊失敗: " + err);
             } finally {
@@ -1490,16 +1624,30 @@ int main() {
                     </div>
                 `;
             } else if (res.verdict === "WA") {
-                banner.style.backgroundColor = "#271d1d";
-                banner.style.borderColor = "#4c2525";
-                banner.innerHTML = `
-                    <div>
-                        <span class="font-bold text-xs flex items-center gap-1.5" style="color: #f87171;">
-                            <i class="fa-solid fa-xmark"></i> Wrong Answer (${res.passedCases}/${res.totalCases} 通過)
-                        </span>
-                        <p class="text-[11px] mt-0.5" style="color: #fca5a5;">部分測資輸出不符，請點擊下方測資分頁查看錯誤案例與輸入。</p>
-                    </div>
-                `;
+                const isPA = res.passedCases > 0 && res.passedCases < res.totalCases;
+                if (isPA) {
+                    banner.style.backgroundColor = "#27221b";
+                    banner.style.borderColor = "#4a3c1f";
+                    banner.innerHTML = `
+                        <div>
+                            <span class="font-bold text-xs flex items-center gap-1.5" style="color: #fbbf24;">
+                                <i class="fa-solid fa-circle-half-stroke"></i> Partial Accepted (${res.passedCases}/${res.totalCases} 測資通過)
+                            </span>
+                            <p class="text-[11px] mt-0.5" style="color: #fcd34d;">通過了部分測資，請點擊下方測資分頁查看未通過的案例與輸入。</p>
+                        </div>
+                    `;
+                } else {
+                    banner.style.backgroundColor = "#271d1d";
+                    banner.style.borderColor = "#4c2525";
+                    banner.innerHTML = `
+                        <div>
+                            <span class="font-bold text-xs flex items-center gap-1.5" style="color: #f87171;">
+                                <i class="fa-solid fa-xmark"></i> Wrong Answer (${res.passedCases}/${res.totalCases} 通過)
+                            </span>
+                            <p class="text-[11px] mt-0.5" style="color: #fca5a5;">測試資料輸出不符，請點擊下方測資分頁查看錯誤案例與輸入。</p>
+                        </div>
+                    `;
+                }
             } else if (res.verdict === "TLE") {
                 banner.style.backgroundColor = "#231b27";
                 banner.style.borderColor = "#3f1f4a";
