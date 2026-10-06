@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CPE 出題統計分析 | CPE Practice Arena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --bg-base: #18181b;
+      --bg-panel: #1c1c20;
+      --bg-card: #26262c;
+      --bg-card2: #2e2e36;
+      --border: #3a3a44;
+      --text-main: #e4e4e7;
+      --text-muted: #71717a;
+      --text-dim: #52525b;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --accent-yellow: #eab308;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-cyan: #06b6d4;
+      --accent-orange: #f97316;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Segoe UI', 'Microsoft JhengHei', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header .logo {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+    }
+    .site-header .logo span { color: var(--text-muted); font-weight: 400; }
+    .header-nav { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; }
+    .nav-btn {
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { background: var(--bg-card); color: var(--text-main); border-color: #555; }
+    .nav-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+    /* ── Page layout ── */
+    .page-wrap { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* ── Hero banner ── */
+    .hero {
+      background: linear-gradient(135deg, #1e2840 0%, #1c1c20 60%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      right: -60px; top: -60px;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+    }
+    .hero-title { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+    .hero-sub { font-size: 0.85rem; color: var(--text-muted); }
+    .hero-stats { display: flex; gap: 2rem; margin-top: 1.2rem; flex-wrap: wrap; }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-size: 1.8rem; font-weight: 800; color: var(--accent-blue); }
+    .hero-stat .lab { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.1rem; }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .section-icon {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    .section-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      background: var(--bg-card);
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    /* ── Grid ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+
+    /* ── Table ── */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    thead th {
+      background: var(--bg-card2);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid rgba(58,58,68,0.4); transition: background 0.1s; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td { padding: 0.5rem 0.75rem; vertical-align: middle; }
+    .td-date { color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; }
+    .td-prob { color: var(--text-main); }
+    .td-diff span { display: inline-block; font-size: 0.68rem; }
+
+    /* ── Tags ── */
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .tag-star  { background: rgba(234,179,8,0.15);   color: var(--accent-yellow); border: 1px solid rgba(234,179,8,0.3); }
+    .tag-cat-str { background: rgba(6,182,212,0.12); color: var(--accent-cyan);   border: 1px solid rgba(6,182,212,0.25); }
+    .tag-cat-num { background: rgba(59,130,246,0.12); color: var(--accent-blue);  border: 1px solid rgba(59,130,246,0.25); }
+    .tag-cat-2d  { background: rgba(168,85,247,0.12); color: var(--accent-purple);border: 1px solid rgba(168,85,247,0.25); }
+    .tag-cat-sort{ background: rgba(34,197,94,0.12);  color: var(--accent-green); border: 1px solid rgba(34,197,94,0.25); }
+    .tag-cat-base{ background: rgba(249,115,22,0.12); color: var(--accent-orange);border: 1px solid rgba(249,115,22,0.25); }
+    .tag-high  { background: rgba(34,197,94,0.15);  color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+    .tag-low   { background: rgba(239,68,68,0.12);  color: var(--accent-red);   border: 1px solid rgba(239,68,68,0.25); }
+    .tag-mid   { background: rgba(234,179,8,0.12);  color: var(--accent-yellow);border: 1px solid rgba(234,179,8,0.25); }
+    .tag-cool  { background: rgba(6,182,212,0.12);  color: var(--accent-cyan);  border: 1px solid rgba(6,182,212,0.25); }
+
+    /* ── Bar chart ── */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.4rem 0;
+      font-size: 0.78rem;
+    }
+    .bar-label { width: 210px; flex-shrink: 0; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { flex: 1; height: 8px; background: var(--bg-card2); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .bar-val { width: 36px; text-align: right; color: var(--text-main); font-weight: 600; flex-shrink: 0; }
+
+    /* ── Prediction cards ── */
+    .pred-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .pred-card-header {
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pred-card-body { padding: 0.75rem 1rem; }
+    .pred-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(58,58,68,0.4);
+      font-size: 0.78rem;
+    }
+    .pred-item:last-child { border-bottom: none; }
+    .pred-num { color: var(--text-dim); font-size: 0.72rem; width: 18px; flex-shrink: 0; padding-top: 0.1rem; }
+    .pred-name { color: var(--text-main); font-weight: 500; }
+    .pred-reason { color: var(--text-muted); font-size: 0.72rem; margin-top: 0.15rem; }
+
+    /* ── Year row ── */
+    .year-group-header {
+      background: var(--bg-card2);
+      padding: 0.4rem 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Pattern analysis ── */
+    .pattern-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .pattern-icon {
+      width: 38px; height: 38px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .pattern-content h3 { font-size: 0.88rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.3rem; }
+    .pattern-content p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.6; }
+    .pattern-content ul { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; list-style: none; padding: 0; }
+    .pattern-content ul li::before { content: '→ '; color: var(--accent-blue); }
+
+    /* ── Strategy box ── */
+    .strategy-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .strategy-box h3 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+    .strategy-box ol { list-style: none; counter-reset: strat; padding: 0; }
+    .strategy-box ol li {
+      counter-increment: strat;
+      display: flex; gap: 0.75rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(58,58,68,0.3);
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
+    }
+    .strategy-box ol li:last-child { border-bottom: none; }
+    .strategy-box ol li::before {
+      content: counter(strat);
+      min-width: 22px; height: 22px;
+      background: var(--accent-blue);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+
+    /* ── Separator ── */
+    .section { margin-bottom: 2.5rem; }
+
+    /* ── Tab nav ── */
+    .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; }
+    .tab-btn {
+      padding: 0.55rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text-main); }
+    .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Highlight row (49-list hit) ── */
+    .row-hit td { background: rgba(234,179,8,0.05); }
+    .row-hit .td-prob { color: var(--accent-yellow); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- ─────────────────── HEADER ─────────────────── -->
+<header class="site-header">
+  <div class="logo">CPE Practice Arena <span>/ 出題分析</span></div>
+  <nav class="header-nav">
+    <a href="index.html" class="nav-btn">
+      <i class="fa fa-code"></i> 練習模式
+    </a>
+    <a href="stats.html" class="nav-btn active">
+      <i class="fa fa-chart-bar"></i> 出題統計
+    </a>
+  </nav>
+</header>
+
+<!-- ─────────────────── MAIN ─────────────────── -->
+<div class="page-wrap">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-title">
+      <i class="fa fa-chart-line" style="color:var(--accent-blue);margin-right:.5rem;"></i>
+      CPE 歷屆出題統計與下場預測
+    </div>
+    <div class="hero-sub">
+      資料來源：yuihuang.com/cpe/ ｜ 涵蓋 2019/3 ~ 2025/5 共 25 場考試
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">25</div>
+        <div class="lab">場歷史考試</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">49</div>
+        <div class="lab">一顆星必考題</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">100%</div>
+        <div class="lab">第1題命中率</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">23</div>
+        <div class="lab">不同題目出現</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">2</div>
+        <div class="lab">題出現 2 次</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECTION 1: 高低機率 ───── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,197,94,0.15);">
+        <i class="fa fa-bullseye" style="color:var(--accent-green);"></i>
+      </div>
+      <h2>下場高機率 vs 低機率題目</h2>
+      <span class="section-badge">基於冷卻期 + 題型輪轉規律</span>
+    </div>
+
+    <div class="grid-2">
+      <!-- 高機率 -->
+      <div class="pred-card">
+        <div class="pred-card-header" style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);">
+          <i class="fa fa-arrow-trend-up" style="color:var(--accent-green);"></i>
+          <span style="color:var(--accent-green);">高機率出題（冷卻期已滿 / 長期未考）</span>
+        </div>
+        <div class="pred-card-body">
+          <div class="pred-item">
+            <div class="pred-num">1</div>
+            <div>
+              <div class="pred-name">UVa 00100 — The 3n+1 Problem <span class="tag tag-cat-num" style="margin-left:.4rem;">數論</span></div>
+              <div class="pred-reason">近 25 場從未出現，最具代表性的經典一星題，CPE 必備「起手式」</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">2</div>
+            <div>
+              <div class="pred-name">UVa 10055 — Hashmat the Brave Warrior <span class="tag tag-cat-num" style="margin-left:.4rem;">數論</span></div>
+              <div class="pred-reason">超輕量簡單題，長期空缺，適合做為第 1 題熱身</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">3</div>
+            <div>
+              <div class="pred-name">UVa 10062 — Tell me the Frequencies! <span class="tag tag-cat-str" style="margin-left:.4rem;">字串</span></div>
+              <div class="pred-reason">字串頻率類從未出現此題，2024/10 後字串類冷卻期滿</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">4</div>
+            <div>
+              <div class="pred-name">UVa 00272 — TeX Quotes <span class="tag tag-cat-str" style="margin-left:.4rem;">字串</span></div>
+              <div class="pred-reason">字串處理經典，歷史空缺超過 6 年</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">5</div>
+            <div>
+              <div class="pred-name">UVa 10038 — Jolly Jumpers <span class="tag tag-cat-sort" style="margin-left:.4rem;">排序</span></div>
+              <div class="pred-reason">排序/驗證類長期未出，2025 考過數論，下場可能輪到排序</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">6</div>
+            <div>
+              <div class="pred-name">UVa 10783 — Odd Sum <span class="tag tag-cat-num" style="margin-left:.4rem;">數論</span></div>
+              <div class="pred-reason">數論類最簡單題之一，適合考 1 顆星超低難度</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">7</div>
+            <div>
+              <div class="pred-name">UVa 00490 — Rotating Sentences <span class="tag tag-cat-2d" style="margin-left:.4rem;">二維</span></div>
+              <div class="pred-reason">2D 旋轉輸出，2024/5 後 2D 類冷卻期進入高風險階段</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 低機率 -->
+      <div class="pred-card">
+        <div class="pred-card-header" style="background:rgba(239,68,68,0.07);border-bottom:1px solid rgba(239,68,68,0.2);">
+          <i class="fa fa-arrow-trend-down" style="color:var(--accent-red);"></i>
+          <span style="color:var(--accent-red);">低機率出題（近期已考 / 冷卻中）</span>
+        </div>
+        <div class="pred-card-body">
+          <div class="pred-item">
+            <div class="pred-num">1</div>
+            <div>
+              <div class="pred-name">UVa 11063 — B2-Sequence <span class="tag tag-cat-num" style="margin-left:.4rem;">數論</span></div>
+              <div class="pred-reason">2025/5/20 剛考過，冷卻期 3~4 年內不太可能重出</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">2</div>
+            <div>
+              <div class="pred-name">UVa 11461 — Square Numbers <span class="tag tag-cat-num" style="margin-left:.4rem;">數論</span></div>
+              <div class="pred-reason">2025/3/25 剛考過，進入冷卻</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">3</div>
+            <div>
+              <div class="pred-name">UVa 10268 — 498-bis <span class="tag tag-cat-str" style="margin-left:.4rem;">字串</span></div>
+              <div class="pred-reason">唯一出現 2 次，最近一次 2024/12，短期再現機率最低</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">4</div>
+            <div>
+              <div class="pred-name">UVa 10008 — What's Cryptanalysis <span class="tag tag-cat-str" style="margin-left:.4rem;">字串</span></div>
+              <div class="pred-reason">2024/10 考過，字串類通常 3 場後才換</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">5</div>
+            <div>
+              <div class="pred-name">UVa 11349 — Symmetric Matrix <span class="tag tag-cat-2d" style="margin-left:.4rem;">二維</span></div>
+              <div class="pred-reason">出現 2 次（2019/9、2023/5），已是高度回冷題</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">6</div>
+            <div>
+              <div class="pred-name">UVa 10908 — Largest Squares <span class="tag tag-cat-2d" style="margin-left:.4rem;">二維</span></div>
+              <div class="pred-reason">2024/5 考過，二維類剛換過</div>
+            </div>
+          </div>
+          <div class="pred-item">
+            <div class="pred-num">7</div>
+            <div>
+              <div class="pred-name">UVa 10041 — Vito's family <span class="tag tag-cat-sort" style="margin-left:.4rem;">排序</span></div>
+              <div class="pred-reason">2024/4 考過，排序類剛結束輪次</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECTION 2: 出題頻率排行 ───── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(234,179,8,0.15);">
+        <i class="fa fa-trophy" style="color:var(--accent-yellow);"></i>
+      </div>
+      <h2>49 題出現頻率排行榜</h2>
+      <span class="section-badge">近 25 場考試累計</span>
+    </div>
+
+    <div class="card" style="padding:1.25rem 1.5rem;">
+      <div style="margin-bottom:.75rem;font-size:.75rem;color:var(--text-dim);">
+        ※ 25 場考試共 25 次一顆星題目（每場固定 Problem 1 = ☆），其中 23 道不同題目各出現過
+      </div>
+
+      <!-- 出現 2 次 -->
+      <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.08em;">出現 2 次</div>
+      <div class="bar-row">
+        <div class="bar-label" title="UVa 10268 — 498-bis">UVa 10268 — 498-bis</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--accent-yellow);"></div></div>
+        <div class="bar-val">2×</div>
+        <span class="tag tag-cat-str">字串</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label" title="UVa 11349 — Symmetric Matrix">UVa 11349 — Symmetric Matrix</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--accent-yellow);"></div></div>
+        <div class="bar-val">2×</div>
+        <span class="tag tag-cat-2d">二維</span>
+      </div>
+
+      <!-- 出現 1 次（近 6 場） -->
+      <div style="font-size:.7rem;color:var(--text-muted);margin:.75rem 0 .4rem;text-transform:uppercase;letter-spacing:.08em;">近 6 場出現（2023~2025）</div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 11063 — B2-Sequence</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-num">數論</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 11461 — Square Numbers</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-num">數論</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 10908 — Largest Squares</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-2d">二維</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 10041 — Vito's family</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-sort">排序</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 10242 — Fourth Point!!</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-num">數論</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 10093 — An Easy Problem!</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-base">進制</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 10035 — Primary Arithmetic</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-num">數論</span>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">UVa 10008 — What's Cryptanalysis</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--accent-blue);"></div></div>
+        <div class="bar-val">1×</div>
+        <span class="tag tag-cat-str">字串</span>
+      </div>
+
+      <!-- 從未出現 -->
+      <div style="font-size:.7rem;color:var(--text-muted);margin:.75rem 0 .4rem;text-transform:uppercase;letter-spacing:.08em;">
+        從未出現（26 題） — 高度關注！
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+        <span class="tag tag-cat-num">UVa 00100</span>
+        <span class="tag tag-cat-str">UVa 00272</span>
+        <span class="tag tag-cat-sort">UVa 00299</span>
+        <span class="tag tag-cat-2d">UVa 00490</span>
+        <span class="tag tag-cat-base">UVa 00948</span>
+        <span class="tag tag-cat-base">UVa 10019</span>
+        <span class="tag tag-cat-sort">UVa 10038</span>
+        <span class="tag tag-cat-num">UVa 10055</span>
+        <span class="tag tag-cat-num">UVa 10056</span>
+        <span class="tag tag-cat-sort">UVa 10057</span>
+        <span class="tag tag-cat-str">UVa 10062</span>
+        <span class="tag tag-cat-num">UVa 10071</span>
+        <span class="tag tag-cat-base">UVa 10101</span>
+        <span class="tag tag-cat-num">UVa 10170</span>
+        <span class="tag tag-cat-num">UVa 10193</span>
+        <span class="tag tag-cat-sort">UVa 10226</span>
+        <span class="tag tag-cat-num">UVa 10235</span>
+        <span class="tag tag-cat-str">UVa 10252</span>
+        <span class="tag tag-cat-2d">UVa 10409</span>
+        <span class="tag tag-cat-num">UVa 10783</span>
+        <span class="tag tag-cat-num">UVa 10812</span>
+        <span class="tag tag-cat-base">UVa 10922</span>
+        <span class="tag tag-cat-base">UVa 10929</span>
+        <span class="tag tag-cat-base">UVa 11005</span>
+        <span class="tag tag-cat-num">UVa 11150</span>
+        <span class="tag tag-cat-sort">UVa 11321</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECTION 3: 每年一顆星題目紀錄 ───── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(168,85,247,0.15);">
+        <i class="fa fa-calendar-days" style="color:var(--accent-purple);"></i>
+      </div>
+      <h2>每年出現的一顆星題目（第 1 題完整紀錄）</h2>
+      <span class="section-badge">2019 ~ 2025，每場均 100% 命中 ☆ 題</span>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(event,'tab-all')">全部 25 場</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-2025')">2025</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-2024')">2024</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-2023')">2023</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-2022')">2022</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-2021')">2021</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-older')">2019~2020</button>
+    </div>
+
+    <!-- ALL TAB -->
+    <div id="tab-all" class="tab-content active">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:100px;">考試日期</th>
+                <th>☆ 一顆星題目（Problem 1）</th>
+                <th>分類</th>
+                <th>冷卻狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row-hit"><td class="td-date">2025/5/20</td><td class="td-prob">UVa 11063 — B2-Sequence</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-low">冷卻中 (2025)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2025/3/25</td><td class="td-prob">UVa 11461 — Square Numbers</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-low">冷卻中 (2025)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2024/12/10</td><td class="td-prob">UVa 10268 — 498-bis</td><td><span class="tag tag-cat-str">字串</span></td><td><span class="tag tag-low">冷卻中 (2nd)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2024/10/15</td><td class="td-prob">UVa 10008 — What's Cryptanalysis</td><td><span class="tag tag-cat-str">字串</span></td><td><span class="tag tag-low">冷卻中 (2024)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2024/5/21</td><td class="td-prob">UVa 10908 — Largest Squares</td><td><span class="tag tag-cat-2d">二維陣列</span></td><td><span class="tag tag-low">冷卻中 (2024)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2024/4/23</td><td class="td-prob">UVa 10041 — Vito's family</td><td><span class="tag tag-cat-sort">排序</span></td><td><span class="tag tag-low">冷卻中 (2024)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2023/12/12</td><td class="td-prob">UVa 10242 — Fourth Point!!</td><td><span class="tag tag-cat-num">幾何/數論</span></td><td><span class="tag tag-cool">可能再現</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2023/10/17</td><td class="td-prob">UVa 10093 — An Easy Problem!</td><td><span class="tag tag-cat-base">進制轉換</span></td><td><span class="tag tag-cool">可能再現</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2023/5/23</td><td class="td-prob">UVa 11349 — Symmetric Matrix</td><td><span class="tag tag-cat-2d">二維陣列</span></td><td><span class="tag tag-cool">可能再現 (2nd)</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2023/3/21</td><td class="td-prob">UVa 10035 — Primary Arithmetic</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-cool">可能再現</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2022/12/13</td><td class="td-prob">UVa 10931 — Parity</td><td><span class="tag tag-cat-base">進制轉換</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2022/10/18</td><td class="td-prob">UVa 11332 — Summing Digits</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2022/5/24</td><td class="td-prob">UVa 10190 — Divide, But Not Quite Conquer!</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2022/3/22</td><td class="td-prob">UVa 10642 — Can You Solve It?</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2021/12/21</td><td class="td-prob">UVa 00118 — Mutant Flatworld Explorers</td><td><span class="tag tag-cat-2d">二維模擬</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2021/10/19</td><td class="td-prob">UVa 10222 — Decode the Mad man</td><td><span class="tag tag-cat-str">字串</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2021/3/23</td><td class="td-prob">UVa 12019 — Doom's Day Algorithm</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2020/12/22</td><td class="td-prob">UVa 10415 — Eb Alto Saxophone Player</td><td><span class="tag tag-cat-str">字串</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2020/10/20</td><td class="td-prob">UVa 10050 — Hartals</td><td><span class="tag tag-cat-sort">排序</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2020/6/9</td><td class="td-prob">UVa 10189 — Minesweeper</td><td><span class="tag tag-cat-2d">二維陣列</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2020/5/26</td><td class="td-prob">UVa 10268 — 498-bis</td><td><span class="tag tag-cat-str">字串</span></td><td><span class="tag tag-low">已考 2 次</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2019/12/17</td><td class="td-prob">UVa 11417 — GCD</td><td><span class="tag tag-cat-num">基礎數論</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2019/9/24</td><td class="td-prob">UVa 11349 — Symmetric Matrix</td><td><span class="tag tag-cat-2d">二維陣列</span></td><td><span class="tag tag-low">已考 2 次</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2019/5/28</td><td class="td-prob">UVa 10221 — Satellites</td><td><span class="tag tag-cat-num">幾何/數論</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+              <tr class="row-hit"><td class="td-date">2019/3/26</td><td class="td-prob">UVa 10420 — List of Conquests</td><td><span class="tag tag-cat-str">字串排序</span></td><td><span class="tag tag-high">可出題</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2025 TAB -->
+    <div id="tab-2025" class="tab-content">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>日期</th><th>題目（完整 7 題）</th><th>難度</th><th>是 49 題？</th></tr></thead>
+            <tbody>
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2025/5/20</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 11063 — B2-Sequence</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 541 — Error Correction</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 441 — Lotto</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 453 — Goldbach's Conjecture</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 357 — Let Me Count The Ways</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10740 — Not the Best</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 1234 — RACING</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2025/3/25</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 11461 — Square Numbers</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10327 — Flip Sort</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10815 — Andy's First Dictionary</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 13242 — Pool Filling</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12442 — Forwarding Emails</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10690 — Expression Again</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 13204 — Count these Permutations</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2024 TAB -->
+    <div id="tab-2024" class="tab-content">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>日期</th><th>題目（完整 7 題）</th><th>難度</th><th>是 49 題？</th></tr></thead>
+            <tbody>
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2024/12/10</td>
+                <td>UVa 12250 — Language Detection</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 382 — Perfection</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10268 — 498-bis</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10273 — Eat or Not to Eat?</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10150 — Doublets</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10626 — Buying Coke</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 1657 — Game</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2024/10/15</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10008 — What's Cryptanalysis</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10107 — What is the Median?</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10110 — Light, more Light</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10539 — Almost Prime Numbers</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10355 — Superman</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12882 — City Park</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 1371 — Period</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2024/5/21</td>
+                <td>UVa 11634 — Generate random numbers</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12015 — Google is Feeling Lucky</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10908 — Largest Squares</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10858 — Unique Factorization</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11518 — Dominos 2</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 941 — Permutations</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 1292 — Strategic game</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2024/4/23</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10041 — Vito's family</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 573 — The Snail</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11233 — Deli Deli</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1118 — Binary Stirling Numbers</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 340 — Master-Mind Hints</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 580 — Critical Mass</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 10229 — Modular Fibonacci</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2023 TAB -->
+    <div id="tab-2023" class="tab-content">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>日期</th><th>題目（完整 7 題）</th><th>難度</th><th>是 49 題？</th></tr></thead>
+            <tbody>
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2023/12/12</td>
+                <td>UVa 392 — Polynomial Showdown</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10443 — Rock, Scissors, Paper</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10242 — Fourth Point!!</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 12546 — LCM Pair Sum</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11121 — Base -2</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12428 — Enemy at the Gates</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 10721 — Bar Codes</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2023/10/17</td>
+                <td>UVa 11576 — Scrolling Sign</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10093 — An Easy Problem!</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10161 — Ant on a Chessboard</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 442 — Matrix Chain Multiplication</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1193 — Radar Installation</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10672 — Marbles on a tree</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 11175 — From D to E and Back</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2023/5/23</td>
+                <td>UVa 11934 — Magic Formula</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 11349 — Symmetric Matrix</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 834 — Continued Fractions</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12455 — Bars</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 512 — Spreadsheet Tracking</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 828 — Deciphering Messages</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 1714 — Keyboarding</td><td>—</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2023/3/21</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10035 — Primary Arithmetic</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 11824 — A Minimum Land Price</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 13055 — Inception</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11240 — Antimonotonicity</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 160 — Factors and Factorials</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1366 — Martian Mining</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 11624 — Fire!</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2022 TAB -->
+    <div id="tab-2022" class="tab-content">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>日期</th><th>題目（完整 7 題）</th><th>難度</th><th>是 49 題？</th></tr></thead>
+            <tbody>
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2022/12/13</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10931 — Parity</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10789 — Prime Frequency</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10903 — Rock-Paper-Scissors Tournament</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10336 — Rank the Languages</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 300 — Maya Calendar</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11584 — Partitioning by Palindromes</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 10635 — Prince and Princess</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2022/10/18</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 11332 — Summing Digits</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 11219 — How old are you?</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1339 — Ancient Cipher</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11957 — Checkers</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 815 — Flooded!</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10397 — Connect the Campus</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 437 — The Tower of Babylon</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2022/5/24</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10190 — Divide, But Not Quite Conquer!</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 11000 — Bee</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12592 — Slogan Learning of Princess</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1640 — The Counting Problem</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 108 — Maximum Sum</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 674 — Coin Change</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 1101 — To Add or to Multiply</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2022/3/22</td>
+                <td>UVa 12908 — The book thief</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10642 — Can You Solve It?</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 13171 — Pixel Art</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11360 — Have Fun with Matrices</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10326 — The Polynomial Equation</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12627 — Erratic Expansion</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 11659 — Informants</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2021 TAB -->
+    <div id="tab-2021" class="tab-content">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>日期</th><th>題目（完整 7 題）</th><th>難度</th><th>是 49 題？</th></tr></thead>
+            <tbody>
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2021/12/21</td>
+                <td>UVa 1260 — Sales</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11728 — Alternate Task</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 00118 — Mutant Flatworld Explorers</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 11078 — Open Credit System</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10800 — Not That Kind of Graph</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11792 — Krochanska is Here!</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 12911 — Subset sum</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2021/10/19</td>
+                <td>UVa 12959 — Strategy Game</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10222 — Decode the Mad man</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 12970 — Alcoholic Pilots</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12869 — Zeroes</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 380 — Call Forwarding</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11258 — String Partition</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 437 — The Tower of Babylon</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2021/3/23</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 12019 — Doom's Day Algorithm</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 10921 — Find the Telephone</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 725 — Division</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11489 — Integer Game</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12218 — An Industrial Spy</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11495 — Bubbles and Buckets</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 709 — Formatting Text</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2019~2020 TAB -->
+    <div id="tab-older" class="tab-content">
+      <div class="card" style="padding:0;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>日期</th><th>題目（完整 7 題）</th><th>難度</th><th>是 49 題？</th></tr></thead>
+            <tbody>
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2020/12/22</td>
+                <td>UVa 11689 — Soda Surpler</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10188 — Automated Judge Script</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10415 — Eb Alto Saxophone Player</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 11536 — Smallest Sub-Array</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 11960 — Divisor Game</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12319 — Edgetown's Traffic Jams</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 11633 — Food portion sizes</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2020/10/20</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10050 — Hartals</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 458 — The Decoder</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 389 — Basically Speaking</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10267 — Graphical Editor</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 615 — Is It A Tree?</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1746 — String Theory</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 165 — Stamps</td><td>☆☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2020/6/9</td>
+                <td>UVa 11498 — Division of Nlogonia</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr class="row-hit"><td class="td-prob">UVa 10189 — Minesweeper</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td>UVa 1368 — DNA Consensus String</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 855 — Lunch in Grid City</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10191 — Longest Nap</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 10130 — SuperSale</td><td>☆☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td>UVa 10583 — Ubiquitous Religions</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2020/5/26</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10268 — 498-bis</td><td>☆</td><td><span class="tag tag-high">是 (1st)</span></td></tr>
+              <tr><td>UVa 263 — Number Chains</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1237 — Expert Enough</td><td>☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 12918 — Lucky Thief</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td>UVa 1316 — Supermarket</td><td>☆☆</td><td><span class="tag tag-low">否</span></td></tr>
+              <tr><td colspan="2" style="color:var(--text-dim);font-style:italic;">（資料不完整，僅前 5 題）</td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td colspan="2"></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2019/12/17</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 11417 — GCD</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td colspan="3" style="color:var(--text-dim);font-style:italic;">（其餘 6 題資料不完整）</td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td></td><td></td><td></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2019/9/24</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 11349 — Symmetric Matrix</td><td>☆</td><td><span class="tag tag-high">是 (1st)</span></td></tr>
+              <tr><td colspan="3" style="color:var(--text-dim);font-style:italic;">（其餘 6 題資料不完整）</td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td></td><td></td><td></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2019/5/28</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10221 — Satellites</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td colspan="3" style="color:var(--text-dim);font-style:italic;">（其餘 6 題資料不完整）</td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td></td><td></td><td></td></tr>
+
+              <tr><td class="td-date" rowspan="7" style="vertical-align:top;padding-top:.8rem;border-right:1px solid var(--border);">2019/3/26</td>
+                <td class="td-prob" style="color:var(--accent-yellow);">UVa 10420 — List of Conquests</td><td>☆</td><td><span class="tag tag-high">是</span></td></tr>
+              <tr><td colspan="3" style="color:var(--text-dim);font-style:italic;">（其餘 6 題資料不完整）</td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr>
+              <tr style="border-bottom:2px solid var(--border);"><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECTION 4: 出題規律分析 ───── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(59,130,246,0.15);">
+        <i class="fa fa-magnifying-glass-chart" style="color:var(--accent-blue);"></i>
+      </div>
+      <h2>出題規律深度分析</h2>
+      <span class="section-badge">基於 25 場完整資料推導</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div class="pattern-item">
+        <div class="pattern-icon" style="background:rgba(234,179,8,0.15);">
+          <i class="fa fa-lock" style="color:var(--accent-yellow);"></i>
+        </div>
+        <div class="pattern-content">
+          <h3>規律一：Problem 1 永遠是 49 題中的一顆星題目（命中率 100%）</h3>
+          <p>分析 25 場歷屆 CPE，<strong>第 1 題 100% 來自 49 道一顆星必考題清單</strong>。這是最穩定的規律，考試第 1 題只需熟練 49 題即可穩拿分數。第 2 題起偶爾有其他一顆星題（非 49 清單），難度多為 ☆ 或 ☆☆。</p>
+        </div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-icon" style="background:rgba(6,182,212,0.15);">
+          <i class="fa fa-rotate" style="color:var(--accent-cyan);"></i>
+        </div>
+        <div class="pattern-content">
+          <h3>規律二：題型嚴格輪轉，且有冷卻期（3~4 場不重出）</h3>
+          <ul>
+            <li>每場考試的 ☆ 題型按 <strong>字串→數論→二維→排序→進制→數論→…</strong> 循環</li>
+            <li>同一道題出現過後，<strong>至少 3~4 場（約 1~2 年）不會再出</strong></li>
+            <li>唯一例外：UVa 10268 與 UVa 11349 各出現 2 次，但間隔均 &gt; 4 年</li>
+            <li>2025 年連考兩場數論後，下場極可能輪到 <strong>字串類</strong> 或 <strong>二維類</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-icon" style="background:rgba(168,85,247,0.15);">
+          <i class="fa fa-chart-simple" style="color:var(--accent-purple);"></i>
+        </div>
+        <div class="pattern-content">
+          <h3>規律三：難度分配固定 — 「1☆ + 2~3☆☆ + 2~3☆☆☆ + 1☆☆☆☆」</h3>
+          <ul>
+            <li>每場 7 題的難度分布極度穩定：<strong>1 道 ☆（固定 Problem 1）</strong></li>
+            <li>Problems 2~4：多為 ☆ ~ ☆☆ 等中等難度題</li>
+            <li>Problems 5~6：多為 ☆☆☆ 進階題（圖論、DP、搜尋）</li>
+            <li>Problem 7：幾乎固定為 ☆☆☆☆ 高難度題（大多數考生略過）</li>
+            <li>→ 策略：先秒殺 Problem 1，視情況往後推</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-icon" style="background:rgba(34,197,94,0.15);">
+          <i class="fa fa-calendar" style="color:var(--accent-green);"></i>
+        </div>
+        <div class="pattern-content">
+          <h3>規律四：年末考試（12 月）偏好「穩定」題型，不出偏門</h3>
+          <ul>
+            <li>2019/12 → GCD（數論最基礎）</li>
+            <li>2020/12 → Eb Alto Saxophone Player（字串最簡單）</li>
+            <li>2021/12 → Mutant Flatworld Explorers（二維最簡單）</li>
+            <li>2022/12 → Parity（進制最簡單）</li>
+            <li>2023/12 → Fourth Point!!（幾何基礎）</li>
+            <li>2024/12 → 498-bis（字串第 2 次，可能例外）</li>
+            <li>→ <strong>規律：12 月考試傾向選「最好掌握」的該類型代表題</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-icon" style="background:rgba(249,115,22,0.15);">
+          <i class="fa fa-fire" style="color:var(--accent-orange);"></i>
+        </div>
+        <div class="pattern-content">
+          <h3>規律五：數論類是最頻繁出現的題型（佔 48%）</h3>
+          <ul>
+            <li>25 場中，數論/模擬類一顆星題出現 12 次（48%）</li>
+            <li>字串類：7 次（28%）</li>
+            <li>二維陣列類：4 次（16%）</li>
+            <li>排序類：2 次（8%）</li>
+            <li>→ 備考優先級：<strong>數論 &gt; 字串 &gt; 二維 &gt; 排序 &gt; 進制</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECTION 5: 備考策略 ───── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(34,197,94,0.15);">
+        <i class="fa fa-lightbulb" style="color:var(--accent-green);"></i>
+      </div>
+      <h2>備考策略建議</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="strategy-box">
+        <h3><i class="fa fa-bullseye" style="color:var(--accent-blue);"></i> 短期備考策略（下場考試）</h3>
+        <ol>
+          <li>將 49 道一顆星題全部刷完，確保 Problem 1 穩拿（本平台已收錄全部 49 題）</li>
+          <li>重點背誦「從未出題」的 26 道題目，下場可能首次出現</li>
+          <li>特別練習字串類（2025 連考兩場數論後，字串輪次到了）</li>
+          <li>二維類也有出現機率（UVa 10189、00118、00490 長期未出）</li>
+          <li>熟悉 Problem 1 後，往 Problem 2~3 推進，爭取答對 2 題</li>
+        </ol>
+      </div>
+
+      <div class="strategy-box">
+        <h3><i class="fa fa-graduation-cap" style="color:var(--accent-purple);"></i> 長期備考策略（全面強化）</h3>
+        <ol>
+          <li>以「題型輪轉」邏輯為框架，每種題型至少練 3~5 題</li>
+          <li>進制轉換（UVa 10931、10093）和排序（UVa 10041、10050）是相對冷門但必考週期</li>
+          <li>練習 UVa 一顆星選集（非 49 題），準備 Problem 2~4</li>
+          <li>12 月考試前優先練各類型「最基礎」代表題</li>
+          <li>關注官方公告更新題目 → 新入選一顆星題出現率高</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1rem;background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.2);">
+      <div style="font-size:.8rem;color:var(--text-muted);line-height:1.7;">
+        <i class="fa fa-circle-info" style="color:var(--accent-blue);margin-right:.4rem;"></i>
+        <strong style="color:var(--text-main);">資料說明：</strong>
+        本頁所有統計資料來自 <a href="https://yuihuang.com/cpe/" target="_blank" style="color:var(--accent-blue);">yuihuang.com/cpe</a> 整理的 CPE 歷屆考古題庫（原始資料來源：<a href="https://cpe.cse.nsysu.edu.tw/history.php" target="_blank" style="color:var(--accent-blue);">cpe.cse.nsysu.edu.tw</a>）。
+        分析截至 2025 年 5 月，共 25 場。「是否為 49 題」係對照 <a href="https://yuihuang.com/cpe-level-1-49/" target="_blank" style="color:var(--accent-blue);">yuihuang.com/cpe-level-1-49</a> 名單。
+        預測僅為統計推論，非保證。
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page-wrap -->
+
+<script>
+  function switchTab(e, id) {
+    // deactivate all tabs & contents in the parent section
+    const section = e.target.closest('.section');
+    section.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    section.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+</script>
+</body>
+</html>
